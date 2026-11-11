@@ -13,7 +13,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # 24.04: el compilador de Theos para Linux enlaza con libxml2.so.2 y libtinfo.so.6 (26.04 ya no trae libxml2).
+    runs-on: ubuntu-24.04
     env:
       THEOS: ${{ github.workspace }}/theos
     steps:

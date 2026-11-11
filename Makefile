@@ -5,13 +5,18 @@ ARCHS = armv7
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = Reactions
+TWEAK_NAME = Reactions ReactionsAgent
 Reactions_FILES = Tweak.x RXCore.m RXParser.m RXStore.m RXTranscript.m RXBadge.m RXPicker.m RXSend.m RXReply.m
 Reactions_FRAMEWORKS = UIKit Foundation CoreGraphics QuartzCore
 Reactions_CFLAGS = -fobjc-arc
+
+# Part that loads into imagent (the daemon that receives and decrypts iMessages). Phase 1A: diagnostics only.
+ReactionsAgent_FILES = RXAgent.x
+ReactionsAgent_FRAMEWORKS = Foundation CoreFoundation
+ReactionsAgent_CFLAGS = -fobjc-arc
 
 # The Settings pane is a plain PreferenceLoader plist (layout/Library/PreferenceLoader), no bundle.
 include $(THEOS)/makefiles/tweak.mk
 
 after-install::
-	install.exec "killall -9 MobileSMS"
+	install.exec "killall -9 imagent MobileSMS"
