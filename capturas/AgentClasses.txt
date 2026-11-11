@@ -1,0 +1,4844 @@
+# Reactions agent class listing (5 min), pid 6042, 2026-11-11 03:53:20
+
+### /System/Library/PrivateFrameworks/IMFoundation.framework/IMFoundation (67 classes)
+
+@interface IMPair : NSObject
+  ivar _first  @
+  ivar _second  @
++ pairWithFirst:second:  @16@0:4@8@12
+- second  @8@0:4
+- setSecond:  v12@0:4@8
+- first  @8@0:4
+- setFirst:  v12@0:4@8
+- initWithFirst:second:  @16@0:4@8@12
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- isEqual:  c12@0:4@8
+- hash  I8@0:4
+@end
+
+@interface IMSystemProxySettingsFetcher : NSObject
+  ivar _delegate  @
+  ivar _host  @"NSString"
+  ivar _port  S
+  ivar _proxyProtocol  i
+  ivar _proxyHost  @"NSString"
+  ivar _proxyPort  S
+  ivar _proxyAccount  @"NSString"
+  ivar _proxyPassword  @"NSString"
+- _callAccountSettingsDelegateMethod  v8@0:4
+- _getProxyAccountAndPasswordFromKeychain  v8@0:4
+- _callProxySettingsDelegateMethod  v8@0:4
+- _takeProxySettingsFromDictionary:  v12@0:4^{__CFDictionary=}8
+- initWithHost:port:delegate:  @20@0:4@8S12@16
+- initWithProxyProtocol:proxyHost:proxyPort:delegate:  @24@0:4i8@12S16@20
+- retrieveProxySettings  v8@0:4
+- retrieveProxyAccountSettings  v8@0:4
+- _host  @8@0:4
+- set_host:  v12@0:4@8
+- _port  S8@0:4
+- set_port:  v12@0:4S8
+- _proxyProtocol  i8@0:4
+- set_proxyProtocol:  v12@0:4i8
+- _proxyHost  @8@0:4
+- set_proxyHost:  v12@0:4@8
+- _proxyPort  S8@0:4
+- set_proxyPort:  v12@0:4S8
+- _proxyAccount  @8@0:4
+- set_proxyAccount:  v12@0:4@8
+- _proxyPassword  @8@0:4
+- set_proxyPassword:  v12@0:4@8
+- dealloc  v8@0:4
+- delegate  @8@0:4
+- setDelegate:  v12@0:4@8
+@end
+
+@interface IMInvocationTrampoline : NSObject
+  ivar _target  @
+- methodSignatureForSelector:  @12@0:4:8
+- forwardInvocation:  v12@0:4@8
+- performInvocation:  v12@0:4@8
+- dealloc  v8@0:4
+- respondsToSelector:  c12@0:4:8
+- target  @8@0:4
+- setTarget:  v12@0:4@8
+@end
+
+@interface IMThreadedInvocationTrampoline : IMInvocationTrampoline
+  ivar _thread  @"NSThread"
+  ivar _immediateForMatchingThread  c
+- forwardInvocation:  v12@0:4@8
+- initWithTarget:thread:immediateForMatchingThread:  @20@0:4@8@12c16
+- dealloc  v8@0:4
+@end
+
+@interface IMDelayedInvocationTrampoline : IMInvocationTrampoline
+  ivar _modes  @"NSArray"
+  ivar _delay  d
+- forwardInvocation:  v12@0:4@8
+- initWithTarget:delay:modes:  @24@0:4@8d12@20
+- dealloc  v8@0:4
+@end
+
+@interface IMCapturedInvocationTrampoline : IMInvocationTrampoline
+  ivar _outInvocation  ^@
+- forwardInvocation:  v12@0:4@8
+- initWithTarget:outInvocation:  @16@0:4@8^@12
+@end
+
+@interface IMFileManager : NSFileManager
++ defaultHFSFileManager  @8@0:4
++ defaultManager  @8@0:4
+- attributesOfItemAtPath:error:  @16@0:4@8^@12
+- MIMETypeOfPath:  @12@0:4@8
+- UTITypeOfPath:  @12@0:4@8
+- pathExtensionForUTIType:  @12@0:4@8
+- pathExtensionForMIMEType:  @12@0:4@8
+- UTITypeOfPathExtension:  @12@0:4@8
+- MIMETypeOfPathExtension:  @12@0:4@8
+- displayNameOfFileWithName:hfsFlags:  @16@0:4@8S12
+- UTITypeOfMimeType:  @12@0:4@8
+@end
+
+@interface IMDirectlyObservableObject : NSObject
+  ivar _observers  @"NSArray"
+- addObserver:  v12@0:4@8
+- observers  @8@0:4
+- setObservers:  v12@0:4@8
+- informObserversOfNotification:  v12@0:4@8
+- _objectDidPostNotification:  v12@0:4@8
+- dealloc  v8@0:4
+- removeObserver:  v12@0:4@8
+@end
+
+@interface FZMessage : NSObject
+  ivar _handle  @"NSString"
+  ivar _service  @"NSString"
+  ivar _account  @"NSString"
+  ivar _subject  @"NSString"
+  ivar _unformattedID  @"NSString"
+  ivar _accountID  @"NSString"
+  ivar _roomName  @"NSString"
+  ivar _senderInfo  @"NSDictionary"
+  ivar _plainBody  @"NSString"
+  ivar _error  I
+  ivar _guid  @"NSString"
+  ivar _time  @"NSDate"
+  ivar _fileTransferGUIDs  @"NSArray"
+  ivar _countryCode  @"NSString"
+  ivar _flags  Q
+  ivar _body  @"NSAttributedString"
+  ivar _bodyData  @"NSData"
+  ivar _replaceID  q
+  ivar _messageID  q
+  ivar _timeRead  @"NSDate"
+  ivar _timeDelivered  @"NSDate"
+- copyDictionaryRepresentation  @8@0:4
+- setSender:  v12@0:4@8
+- bodyData  @8@0:4
+- initWithCoder:  @12@0:4@8
+- encodeWithCoder:  v12@0:4@8
+- isEmpty  c8@0:4
+- initWithDictionary:  @12@0:4@8
+- body  @8@0:4
+- flags  Q8@0:4
+- setTime:  v12@0:4@8
+- time  @8@0:4
+- sender  @8@0:4
+- dictionaryRepresentation  @8@0:4
+- setSubject:  v12@0:4@8
+- subject  @8@0:4
+- isFinished  c8@0:4
+- setBody:  v12@0:4@8
+- isFromMe  c8@0:4
+- isRead  c8@0:4
+- isDelivered  c8@0:4
+- timeRead  @8@0:4
+- fileTransferGUIDs  @8@0:4
+- isSent  c8@0:4
+- timeDelivered  @8@0:4
+- plainBody  @8@0:4
+- handle  @8@0:4
+- setHandle:  v12@0:4@8
+- errorCode  I8@0:4
+- setErrorCode:  v12@0:4I8
+- service  @8@0:4
+- isTypingMessage  c8@0:4
+- roomName  @8@0:4
+- wasDataDetected  c8@0:4
+- setRoomName:  v12@0:4@8
+- isEmote  c8@0:4
+- initWithSenderInfo:time:timeRead:timeDelivered:subject:body:bodyData:attributes:fileTransferGUIDs:flags:guid:messageID:account:accountID:service:handle:roomName:unformattedID:countryCode:errorType:  @96@0:4@8@12@16@20@24@28@32@36@40Q44@52q56@64@68@72@76@80@84@88I92
+- hasDataDetectorResults  c8@0:4
+- isAlert  c8@0:4
+- wasDowngraded  c8@0:4
+- initWithDictionary:hint:  @16@0:4@8@12
+- setPlainBody:  v12@0:4@8
+- senderInfo  @8@0:4
+- setSenderInfo:  v12@0:4@8
+- setTimeRead:  v12@0:4@8
+- setTimeDelivered:  v12@0:4@8
+- setBodyData:  v12@0:4@8
+- setFileTransferGUIDs:  v12@0:4@8
+- setAccountID:  v12@0:4@8
+- setMessageID:  v16@0:4q8
+- replaceID  q8@0:4
+- setReplaceID:  v16@0:4q8
+- unformattedID  @8@0:4
+- setUnformattedID:  v12@0:4@8
+- _generateBodyTextIfNeeded  v8@0:4
+- _generateBodyDataIfNeeded  v8@0:4
+- initWithSenderInfo:time:body:attributes:fileTransferGUIDs:flags:error:guid:  @44@0:4@8@12@16@20@24Q28@36@40
+- adjustIsEmptyFlag  v8@0:4
+- _regenerateBodyData  v8@0:4
+- _regenerateBodyText  v8@0:4
+- _clearBodyData  v8@0:4
+- encodeWithIMRemoteObjectSerializedDictionary:  v12@0:4@8
+- initWithIMRemoteObjectSerializedDictionary:  @12@0:4@8
+- initWithSender:time:body:attributes:fileTransferGUIDs:flags:error:guid:  @44@0:4@8@12@16@20@24Q28@36@40
+- initWithSenderInfo:time:body:attributes:fileTransferGUIDs:flags:guid:account:accountID:service:handle:roomName:error:  @64@0:4@8@12@16@20@24Q28@36@40@44@48@52@56@60
+- initWithSenderInfo:time:body:attributes:fileTransferGUIDs:flags:guid:messageID:account:accountID:service:handle:roomName:error:  @72@0:4@8@12@16@20@24Q28@36q40@48@52@56@60@64@68
+- initWithSenderInfo:time:timeRead:timeDelivered:body:attributes:fileTransferGUIDs:flags:guid:messageID:account:accountID:service:handle:roomName:error:  @80@0:4@8@12@16@20@24@28@32Q36@44q48@56@60@64@68@72@76
+- initWithSenderInfo:time:timeRead:timeDelivered:body:attributes:fileTransferGUIDs:flags:guid:messageID:account:accountID:service:handle:roomName:errorType:  @80@0:4@8@12@16@20@24@28@32Q36@44q48@56@60@64@68@72I76
+- initWithSenderInfo:time:timeRead:timeDelivered:subject:body:attributes:fileTransferGUIDs:flags:guid:messageID:account:accountID:service:handle:roomName:errorType:  @84@0:4@8@12@16@20@24@28@32@36Q40@48q52@60@64@68@72@76I80
+- isPrepared  c8@0:4
+- setHasDataDetectorResults:  v12@0:4c8
+- setWasDataDetected:  v12@0:4c8
+- account  @8@0:4
+- accountID  @8@0:4
+- setAccount:  v12@0:4@8
+- messageID  q8@0:4
+- countryCode  @8@0:4
+- setService:  v12@0:4@8
+- setCountryCode:  v12@0:4@8
+- setFlags:  v16@0:4Q8
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- isEqual:  c12@0:4@8
+- description  @8@0:4
+- guid  @8@0:4
+- setGuid:  v12@0:4@8
+@end
+
+@interface IMInvocationQueue : NSObject
+  ivar _delegate  @
+  ivar _target  @
+  ivar _dequeueRate  d
+  ivar _queue  @"NSMutableArray"
+  ivar _options  @"NSMutableArray"
+  ivar _protocolChecker  @"NSProtocolChecker"
+  ivar _holdQueue  c
+- peek  @8@0:4
+- setProtocol:  v12@0:4@8
+- methodSignatureForSelector:  @12@0:4:8
+- isEmpty  c8@0:4
+- forwardInvocation:  v12@0:4@8
+- options  @8@0:4
+- protocol  @8@0:4
+- queue  @8@0:4
+- _optionsForInvocation:  I12@0:4@8
+- _enqueueInvocation:options:  i16@0:4@8I12
+- _invokeInvocation:  c12@0:4@8
+- _setQueueTimer  v8@0:4
+- _checkQueue  v8@0:4
+- _dequeueInvocation  @8@0:4
+- _numberOfLimitedMessagesInQueue  i8@0:4
+- _maxQueueLimitSize  i8@0:4
+- _acceptsOptions:  c12@0:4I8
+- _replaceSimilarInvocation:  c12@0:4@8
+- _insertInvocation:options:  c16@0:4@8I12
+- setDequeueRate:  v16@0:4d8
+- _stepQueueNotification:  v12@0:4@8
+- _holdQueueNotification:  v12@0:4@8
+- _releaseQueueNotification:  v12@0:4@8
+- removeAllInvocations  v8@0:4
+- invokeAll  v8@0:4
+- dequeueRate  d8@0:4
+- protocolChecker  @8@0:4
+- holdQueue  c8@0:4
+- count  I8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- target  @8@0:4
+- setTarget:  v12@0:4@8
+- delegate  @8@0:4
+- setDelegate:  v12@0:4@8
+@end
+
+@interface NetworkChangeNotifier : NSObject
+  ivar _store  ^{__SCDynamicStore=}
+  ivar _runLoopSource  ^{__CFRunLoopSource=}
+  ivar _myIP  @"NSString"
+  ivar _myIPs  @"NSArray"
+  ivar _connectionMonitor  @"IMConnectionMonitor"
+  ivar _lastPostedNetworkUp  c
++ enableNotifications  c8@0:4
++ disableNotifications  v8@0:4
++ sharedInstance  @8@0:4
+- store  ^{__SCDynamicStore=}8@0:4
+- setStore:  v12@0:4^{__SCDynamicStore=}8
+- linkQualityValueForInterfaceType:  i12@0:4I8
+- myIPAddress  @8@0:4
+- myGatewayAddress  @8@0:4
+- _clearIPCache  v8@0:4
+- _listenForChanges  c8@0:4
+- _clearSharedDNSService  v8@0:4
+- linkQualityValueForInterface:  i12@0:4@8
+- connectionMonitorDidUpdate:  v12@0:4@8
+- myIPAddresses  @8@0:4
+- getDynamicStore  ^{__SCDynamicStore=}8@0:4
+- linkQualityForInterfaceType:  I12@0:4I8
+- runLoopSource  ^{__CFRunLoopSource=}8@0:4
+- setRunLoopSource:  v12@0:4^{__CFRunLoopSource=}8
+- myIP  @8@0:4
+- setMyIP:  v12@0:4@8
+- myIPs  @8@0:4
+- setMyIPs:  v12@0:4@8
+- connectionMonitor  @8@0:4
+- setConnectionMonitor:  v12@0:4@8
+- lastPostedNetworkUp  c8@0:4
+- setLastPostedNetworkUp:  v12@0:4c8
+- systemDidWake  v8@0:4
+- systemWillSleep  v8@0:4
+- isNetworkUp  c8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMXMLParser : NSObject
+  ivar _parser  @"NSXMLParser"
+  ivar _context  @"IMXMLParserContext"
+  ivar _topFrame  @"IMXMLParserFrame"
+  ivar _otherFrames  @"NSMutableArray"
+  ivar _tidyDoc  ^{_TidyDoc=i}
+  ivar _framespace  ^{__CFDictionary=}
++ sharedInstance  @8@0:4
+- parser:parseErrorOccurred:  v16@0:4@8@12
+- parser:foundCharacters:  v16@0:4@8@12
+- parser:didEndElement:namespaceURI:qualifiedName:  v24@0:4@8@12@16@20
+- parser:didStartElement:namespaceURI:qualifiedName:attributes:  v28@0:4@8@12@16@20@24
+- parser:foundIgnorableWhitespace:  v16@0:4@8@12
+- _teardownTidy  v8@0:4
+- _setupTidy  v8@0:4
+- _newDataByTidyingData:  @12@0:4@8
+- parseContext:  c12@0:4@8
+@end
+
+@interface IMXMLParserContext : NSObject
+  ivar _inContentAsData  @"NSData"
+- resultsForLogging  @8@0:4
+- inContentAsData  @8@0:4
+- initWithContentAsData:  @12@0:4@8
+- initWithContent:  @12@0:4@8
+- inContent  @8@0:4
+- dealloc  v8@0:4
+- name  @8@0:4
+- reset  v8@0:4
+@end
+
+@interface IMXMLParserFrame : NSObject
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+- parser:context:foundCharacters:  v20@0:4@8@12@16
+- parser:context:foundIgnorableWhitespace:  v20@0:4@8@12@16
+@end
+
+@interface IMToSuperParserContext : IMXMLParserContext
+  ivar _underlineCount  I
+  ivar _boldCount  I
+  ivar _italicCount  I
+  ivar _strikethroughCount  I
+  ivar _messagePartNumber  I
+  ivar _fontFamilyStack  @"NSMutableArray"
+  ivar _fontSizeStack  @"NSMutableArray"
+  ivar _linkStack  @"NSMutableArray"
+  ivar _backgroundColorStack  @"NSMutableArray"
+  ivar _foregroundColorStack  @"NSMutableArray"
+  ivar _currentAttributes  @"NSMutableDictionary"
+  ivar _didAddBodyAttributes  c
+  ivar _baseWritingDirection  i
+  ivar _backgroundColor  @"NSString"
+  ivar _foregroundColor  @"NSString"
+  ivar _body  @"NSMutableAttributedString"
+  ivar _fileTransferGUIDs  @"NSMutableArray"
+- setBackgroundColor:  v12@0:4@8
+- backgroundColor  @8@0:4
+- setBaseWritingDirection:  v12@0:4i8
+- body  @8@0:4
+- foregroundColor  @8@0:4
+- _updateFontSize  v8@0:4
+- fileTransferGUIDs  @8@0:4
+- setFileTransferGUIDs:  v12@0:4@8
+- resultsForLogging  @8@0:4
+- _clearIvars  v8@0:4
+- _initIvars  v8@0:4
+- _updateFontFamily  v8@0:4
+- _pushValue:ontoStack:attributeName:  v20@0:4@8@12@16
+- _popValueFromStack:attributeName:  v16@0:4@8@12
+- appendInlineImageWithGUID:filename:width:height:  v24@0:4@8@12i16i20
+- _incrementMessagePartNumber  v8@0:4
+- incrementBoldCount  v8@0:4
+- decrementBoldCount  v8@0:4
+- incrementItalicCount  v8@0:4
+- decrementItalicCount  v8@0:4
+- incrementUnderlineCount  v8@0:4
+- decrementUnderlineCount  v8@0:4
+- incrementStrikethroughCount  v8@0:4
+- decrementStrikethroughCount  v8@0:4
+- pushFontFamily:  v12@0:4@8
+- popFontFamily  v8@0:4
+- pushFontSize:  v12@0:4@8
+- popFontSize  v8@0:4
+- pushLink:  v12@0:4@8
+- popLink  v8@0:4
+- pushBackgroundColor:  v12@0:4@8
+- popBackgroundColor  v8@0:4
+- pushForegroundColor:  v12@0:4@8
+- popForegroundColor  v8@0:4
+- appendFileTransferWithGUID:  v12@0:4@8
+- baseWritingDirection  i8@0:4
+- setForegroundColor:  v12@0:4@8
+- appendString:  v12@0:4@8
+- dealloc  v8@0:4
+- name  @8@0:4
+- reset  v8@0:4
+@end
+
+@interface IMToSuperParserFrame : IMXMLParserFrame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+- parser:context:foundCharacters:  v20@0:4@8@12@16
+- parser:context:foundIgnorableWhitespace:  v20@0:4@8@12@16
+@end
+
+@interface IMFileTransfer : NSObject
+  ivar _localURL  @"NSURL"
+  ivar _localBookmark  @"NSData"
+  ivar _lastUpdatedInterval  d
+  ivar _lastAveragedInterval  d
+  ivar _lastAveragedBytes  Q
+  ivar _guid  @"NSString"
+  ivar _messageGUID  @"NSString"
+  ivar _startDate  @"NSDate"
+  ivar _createdDate  @"NSDate"
+  ivar _transferState  i
+  ivar _isIncoming  c
+  ivar _filename  @"NSString"
+  ivar _transferDataURL  @"NSURL"
+  ivar _utiType  @"NSString"
+  ivar _mimeType  @"NSString"
+  ivar _hfsType  L
+  ivar _hfsFlags  S
+  ivar _hfsCreator  L
+  ivar _accountID  @"NSString"
+  ivar _otherPerson  @"NSString"
+  ivar _currentBytes  Q
+  ivar _totalBytes  Q
+  ivar _averageTransferRate  Q
+  ivar _isDirectory  c
+  ivar _shouldAttemptToResume  c
+  ivar _error  i
+  ivar _errorDescription  @"NSString"
+  ivar _wasRegisteredAsStandalone  c
+  ivar _shouldForceArchive  c
+  ivar _localUserInfo  @"NSDictionary"
+  ivar _transferredFilename  @"NSString"
+  ivar _transcoderUserInfo  @"NSDictionary"
++ _doesLocalURLRequireArchiving:  c12@0:4@8
++ _invalidCharactersForFileTransferName  @8@0:4
+- filename  @8@0:4
+- setFilename:  v12@0:4@8
+- startDate  @8@0:4
+- _clear  v8@0:4
+- isDirectory  c8@0:4
+- _setError:  v12@0:4i8
+- setType:  v12@0:4@8
+- mimeType  @8@0:4
+- displayName  @8@0:4
+- setUserInfo:  v12@0:4@8
+- messageGUID  @8@0:4
+- setTranscoderUserInfo:  v12@0:4@8
+- setMessageGUID:  v12@0:4@8
+- _initWithGUID:filename:isDirectory:localURL:account:otherPerson:totalBytes:hfsType:hfsCreator:hfsFlags:isIncoming:  @56@0:4@8@12c16@20@24@28Q32L40L44S48c52
+- _setAccount:otherPerson:  v16@0:4@8@12
+- _dictionaryRepresentation  @8@0:4
+- _setForceArchive:  v12@0:4c8
+- _setTransferState:  v12@0:4i8
+- _setLocalURL:  v12@0:4@8
+- otherPerson  @8@0:4
+- setRegisteredAsStandalone:  v12@0:4c8
+- _updateWithDictionaryRepresentation:  c12@0:4@8
+- wasRegisteredAsStandalone  c8@0:4
+- _setCurrentBytes:totalBytes:  v24@0:4Q8Q16
+- _setAveragedTransferRate:lastAveragedInterval:lastAveragedBytes:  v32@0:4Q8d16Q24
+- transferState  i8@0:4
+- isIncoming  c8@0:4
+- localPath  @8@0:4
+- setAccountID:  v12@0:4@8
+- setCurrentBytes:  v16@0:4Q8
+- setTotalBytes:  v16@0:4Q8
+- _setLocalPath:  v12@0:4@8
+- hfsFlags  S8@0:4
+- _calculateTypeInformation  v8@0:4
+- _setStartDate:  v12@0:4@8
+- _setDirectory:hfsType:hfsCreator:hfsFlags:  v24@0:4c8L12L16S20
+- canBeAccepted  c8@0:4
+- existsAtLocalPath  c8@0:4
+- _setTransferDataURL:  v12@0:4@8
+- hfsType  L8@0:4
+- localURLWithoutBookmarkResolution  @8@0:4
+- localBookmark  @8@0:4
+- setLocalBookmark:  v12@0:4@8
+- _lastUpdatedInterval  d8@0:4
+- _setLastUpdatedInterval:  v16@0:4d8
+- _lastAveragedInterval  d8@0:4
+- _setLastAveragedInterval:  v16@0:4d8
+- _lastAveragedBytes  Q8@0:4
+- createdDate  @8@0:4
+- setCreatedDate:  v12@0:4@8
+- setIsIncoming:  v12@0:4c8
+- transferDataURL  @8@0:4
+- setHfsType:  v12@0:4L8
+- setHfsFlags:  v12@0:4S8
+- hfsCreator  L8@0:4
+- setHfsCreator:  v12@0:4L8
+- setOtherPerson:  v12@0:4@8
+- currentBytes  Q8@0:4
+- averageTransferRate  Q8@0:4
+- setAverageTransferRate:  v16@0:4Q8
+- setIsDirectory:  v12@0:4c8
+- shouldAttemptToResume  c8@0:4
+- setShouldAttemptToResume:  v12@0:4c8
+- errorDescription  @8@0:4
+- _setErrorDescription:  v12@0:4@8
+- shouldForceArchive  c8@0:4
+- transferredFilename  @8@0:4
+- setTransferredFilename:  v12@0:4@8
+- transcoderUserInfo  @8@0:4
+- accountID  @8@0:4
+- error  i8@0:4
+- totalBytes  Q8@0:4
+- dealloc  v8@0:4
+- userInfo  @8@0:4
+- description  @8@0:4
+- type  @8@0:4
+- localURL  @8@0:4
+- guid  @8@0:4
+- setGuid:  v12@0:4@8
+@end
+
+@interface IMSystemMonitor : NSObject
+  ivar _watchesDataProtectionLockState  c
+  ivar _watchesScreenLightState  c
+  ivar _receivesMemoryWarnings  c
+  ivar _willSleep  c
+  ivar _screenLocked  c
+  ivar _screensaverActive  c
+  ivar _watchesSystemLockState  c
+  ivar _dataProtectionState  i
+  ivar _underFirstLock  c
+  ivar _active  c
+  ivar _backingUp  c
+  ivar _switchedOut  c
+  ivar _listeners  @"NSMutableArray"
+  ivar _idleStart  @"NSDate"
+  ivar _timer  @"NSTimer"
+  ivar _screenLit  c
+  ivar _dateScreenLightLastChanged  @"NSDate"
+  ivar _dateSystemLockLastChanged  @"NSDate"
+  ivar _systemLocked  c
+  ivar _userID  @"NSString"
+  ivar _delayTime  d
+  ivar _idleOverride  c
+  ivar _earlyListeners  @"NSMutableArray"
+  ivar _usesPowerNotifications  c
+  ivar _usesSystemIdleState  c
+  ivar _inBackground  c
++ sharedInstance  @8@0:4
+- setReceivesMemoryWarnings:  v12@0:4c8
+- _receivedMemoryNotification  v8@0:4
+- setActive:  v12@0:4c8
+- isActive  c8@0:4
+- _applicationDidEnterBackground:  v12@0:4@8
+- _applicationWillEnterForeground:  v12@0:4@8
+- _applicationWillResignActive:  v12@0:4@8
+- _applicationDidBecomeActive:  v12@0:4@8
+- _screenUnlocked:  v12@0:4@8
+- _screenLocked:  v12@0:4@8
+- isScreenLit  c8@0:4
+- dateScreenLightLastChanged  @8@0:4
+- isFastUserSwitched  c8@0:4
+- addListener:  v12@0:4@8
+- removeListener:  v12@0:4@8
+- setUsesPowerNotifications:  v12@0:4c8
+- setWatchesScreenLightState:  v12@0:4c8
+- isInBackground  c8@0:4
+- systemIsShuttingDown  c8@0:4
+- _userID  @8@0:4
+- _addEarlyListener:  v12@0:4@8
+- _removeEarlyListener:  v12@0:4@8
+- isSetup  c8@0:4
+- isUnderFirstDataProtectionLock  c8@0:4
+- _suspend:  v12@0:4@8
+- _resume:  v12@0:4@8
+- _suspendEventsOnly:  v12@0:4@8
+- _resumeEventsOnly:  v12@0:4@8
+- _applicationWillAddDeactivationReason:  v12@0:4@8
+- _applicationDidRemoveDeactivationReason:  v12@0:4@8
+- _registerForRestoreNotifications  v8@0:4
+- _unregisterForRestoreNotifications  v8@0:4
+- _unregisterForLoginWindowNotifications  v8@0:4
+- _deliverNotificationSelector:  v12@0:4:8
+- _postScreenLocked  v8@0:4
+- _postScreenSaverStarted  v8@0:4
+- usesPowerNotifications  c8@0:4
+- _notificationCenterWillAppear:  v12@0:4@8
+- _notificationCenterDidDisappear:  v12@0:4@8
+- isUnderDataProtectionLock  c8@0:4
+- isSystemIdle  c8@0:4
+- _systemDidWake  v8@0:4
+- _systemWillSleep  v8@0:4
+- _screenSaverStopped:  v12@0:4@8
+- _screenSaverStarted:  v12@0:4@8
+- _setDataProtectionLockState:  v12@0:4i8
+- setWatchesDataProtectionLockState:  v12@0:4c8
+- setWatchesSystemLockState:  v12@0:4c8
+- _setSystemScreenState:  v12@0:4c8
+- _setSystemLockState:  v12@0:4c8
+- setUsesSystemIdleState:  v12@0:4c8
+- _setIdleState:  v12@0:4c8
+- _overrideAndDisableIdleTimer:  v12@0:4c8
+- systemIdleTime  d8@0:4
+- _systemWillShutdown  v8@0:4
+- _checkRestoredFromBackup  v8@0:4
+- _restoreDidStart  v8@0:4
+- _restoreDidStop  v8@0:4
+- _setupStateChanged  v8@0:4
+- _handleLoginWindowNotification:  v12@0:4@8
+- _registerForLoginWindowNotifications  v8@0:4
+- watchesDataProtectionLockState  c8@0:4
+- watchesScreenLightState  c8@0:4
+- receivesMemoryWarnings  c8@0:4
+- systemIsSleeping  c8@0:4
+- isScreenLocked  c8@0:4
+- isScreenSaverActive  c8@0:4
+- watchesSystemLockState  c8@0:4
+- _dataProtectionState  i8@0:4
+- set_dataProtectionState:  v12@0:4i8
+- _underFirstLock  c8@0:4
+- set_underFirstLock:  v12@0:4c8
+- isBackingUp  c8@0:4
+- setIsFastUserSwitched:  v12@0:4c8
+- _listeners  @8@0:4
+- set_listeners:  v12@0:4@8
+- _idleStart  @8@0:4
+- set_idleStart:  v12@0:4@8
+- _timer  @8@0:4
+- set_timer:  v12@0:4@8
+- dateSystemLockLastChanged  @8@0:4
+- isSystemLocked  c8@0:4
+- set_userID:  v12@0:4@8
+- _delayTime  d8@0:4
+- set_delayTime:  v16@0:4d8
+- _idleOverride  c8@0:4
+- set_idleOverride:  v12@0:4c8
+- _earlyListeners  @8@0:4
+- set_earlyListeners:  v12@0:4@8
+- usesSystemIdleState  c8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMAttributedStringParser : NSObject
+  ivar _context  @"IMAttributedStringParserContext"
++ sharedInstance  @8@0:4
+- parseContext:  v12@0:4@8
+- _preprocessWithContext:string:  v16@0:4@8^@12
+@end
+
+@interface IMAttributedStringParserContext : NSObject
+  ivar _inString  @"NSAttributedString"
+- initWithAttributedString:  @12@0:4@8
+- resultsForLogging  @8@0:4
+- parser:preprocessedAttributesForAttributes:range:  @24@0:4@8@12{_NSRange=II}16
+- inString  @8@0:4
+- parserDidStart:  v12@0:4@8
+- shouldPreprocess  c8@0:4
+- parser:foundAttributes:inRange:  v24@0:4@8@12{_NSRange=II}16
+- parserDidEnd:  v12@0:4@8
+- dealloc  v8@0:4
+- name  @8@0:4
+@end
+
+@interface IMFromSuperParserContext : IMAttributedStringParserContext
+  ivar _inlinedFileTransferGUIDs  @"NSMutableArray"
+  ivar _standaloneFileTransferGUIDs  @"NSMutableArray"
+- initWithAttributedString:  @12@0:4@8
+- resultsForLogging  @8@0:4
+- parserDidStart:  v12@0:4@8
+- parser:foundAttributes:inRange:  v24@0:4@8@12{_NSRange=II}16
+- parserDidStart:bodyAttributes:  v16@0:4@8@12
+- parser:foundAttributes:inRange:fileTransferGUID:filename:bookmark:width:height:  v44@0:4@8@12{_NSRange=II}16@24@28@32@36@40
+- parser:foundAttributes:inRange:characters:  v28@0:4@8@12{_NSRange=II}16@24
+- inlinedFileTransferGUIDs  @8@0:4
+- standaloneFileTransferGUIDs  @8@0:4
+- dealloc  v8@0:4
+- name  @8@0:4
+@end
+
+@interface IMSuperToPlainParserContext : IMFromSuperParserContext
+  ivar _plainString  @"NSMutableString"
+  ivar _extractLinks  c
+- initWithAttributedString:  @12@0:4@8
+- resultsForLogging  @8@0:4
+- parser:foundAttributes:inRange:characters:  v28@0:4@8@12{_NSRange=II}16@24
+- initWithAttributedString:extractLinks:  @16@0:4@8c12
+- plainString  @8@0:4
+- dealloc  v8@0:4
+- name  @8@0:4
+@end
+
+@interface IMUserNotification : NSObject
+  ivar _reserved  @
++ userNotificationWithIdentifier:title:message:defaultButton:alternateButton:otherButton:  @32@0:4@8@12@16@20@24@28
++ userNotificationWithIdentifier:timeout:alertLevel:displayFlags:displayInformation:  @32@0:4@8d12I20I24@28
+- timeout  d8@0:4
+- response  I8@0:4
+- setUserInfo:  v12@0:4@8
+- _initWithIdentifier:timeout:displayFlags:displayInformation:  @28@0:4@8d12I20@24
+- responseFlags  I8@0:4
+- displayFlags  I8@0:4
+- displayInformation  @8@0:4
+- responseInformation  @8@0:4
+- _setResponseFlags:responseInformation:  v16@0:4I8@12
+- dealloc  v8@0:4
+- userInfo  @8@0:4
+- identifier  @8@0:4
+@end
+
+@interface IMUserNotificationCenter : NSObject
+  ivar _identifierToIMUserNotificationQueueMap  @"NSMutableDictionary"
+  ivar _identifierToListenerQueueMap  @"NSMutableDictionary"
+  ivar _identifierToBlockQueueMap  @"NSMutableDictionary"
+  ivar _identifierToRunLoopSourcesMap  @"NSMutableDictionary"
+  ivar _identifierToCFUserNotificationMap  @"NSMutableDictionary"
++ sharedInstance  @8@0:4
+- removeListener:  v12@0:4@8
+- addUserNotification:listener:completionHandler:  v20@0:4@8@12@?16
+- addUserNotification:listener:  v16@0:4@8@12
+- _dequeueUserNotificationForIdentifier:  @12@0:4@8
+- _dequeueListenerForIdentifier:  @12@0:4@8
+- _dequeueBlockForIdentifier:  @?12@0:4@8
+- _frontUserNotificationForIdentifier:  @12@0:4@8
+- _displayNextUserNotificationForIdentifier:  v12@0:4@8
+- _enqueueUserNotification:forIdentifier:  v16@0:4@8@12
+- _enqueueListener:forIdentifier:  v16@0:4@8@12
+- _enqueueBlock:forIdentifier:  v16@0:4@?8@12
+- _frontListenerForIdentifier:  @12@0:4@8
+- _cancelActiveUserNotificationForIdentifier:  v12@0:4@8
+- _frontBlockForIdentifier:  @?12@0:4@8
+- _handleUserNotification:responseFlags:  v16@0:4^{__CFUserNotification=}8L12
+- countForIdentifier:  I12@0:4@8
+- removeAllListeners  v8@0:4
+- identifierToIMUserNotificationQueueMap  @8@0:4
+- setIdentifierToIMUserNotificationQueueMap:  v12@0:4@8
+- identifierToListenerQueueMap  @8@0:4
+- setIdentifierToListenerQueueMap:  v12@0:4@8
+- identifierToBlockQueueMap  @8@0:4
+- setIdentifierToBlockQueueMap:  v12@0:4@8
+- identifierToRunLoopSourcesMap  @8@0:4
+- setIdentifierToRunLoopSourcesMap:  v12@0:4@8
+- identifierToCFUserNotificationMap  @8@0:4
+- setIdentifierToCFUserNotificationMap:  v12@0:4@8
+- dealloc  v8@0:4
+@end
+
+@interface IMFileCopier : NSObject
+  ivar _delegate  @"<IMFileCopierDelegate>"
+  ivar _inputURL  @"NSURL"
+  ivar _outputURL  @"NSURL"
+  ivar _identifier  @
+  ivar _shouldCancel  c
+  ivar _didErrorOccur  c
+  ivar _inProgress  c
+  ivar _operation  I
+  ivar _BOMCopier  ^v
+- outputURL  @8@0:4
+- start  v8@0:4
+- cleanup  v8@0:4
+- _fillOutputURLFromInputURL  v8@0:4
+- inputURL  @8@0:4
+- _temporaryCopierPath  @8@0:4
+- _worker_doCopy  v8@0:4
+- _main_copierFinishedWithResult:  v12@0:4@8
+- initWithInputURL:outputURL:identifier:operation:delegate:  @28@0:4@8@12@16I20@24
+- wasCancelled  c8@0:4
+- didErrorOccur  c8@0:4
+- inProgress  c8@0:4
+- setInProgress:  v12@0:4c8
+- _BOMCopier  ^v8@0:4
+- set_BOMCopier:  v12@0:4^v8
+- dealloc  v8@0:4
+- cancel  v8@0:4
+- operation  I8@0:4
+- setOperation:  v12@0:4I8
+- identifier  @8@0:4
+- delegate  @8@0:4
+- setDelegate:  v12@0:4@8
+@end
+
+@interface IMReachability : NSObject
+  ivar _delegate  @"<IMReachabilityDelegate>"
+  ivar _gettingFlags  c
+  ivar _flags  I
+  ivar _description  @"NSString"
+  ivar _reachabilityRef  ^v
++ reachabilityWithHostName:  @12@0:4@8
++ reachabilityWithRemoteAddress:  @12@0:4@8
++ reachabilityWithLocalAddress:remoteAddress:  @16@0:4@8@12
+- flags  I8@0:4
+- initWithRemoteHost:delegate:  @16@0:4@8@12
+- initWithLocalSocketAddress:remoteSocketAddress:delegate:  @20@0:4@8@12@16
+- _handleCallbackForSCNetworkReachability:  v12@0:4^{__SCNetworkReachability=}8
+- _initWithReachabilityRef:description:delegate:  @20@0:4^{__SCNetworkReachability=}8@12@16
+- _forceGetFlagsIfNecessary  v8@0:4
+- connectionRequired  c8@0:4
+- gettingFlags  c8@0:4
+- setGettingFlags:  v12@0:4c8
+- reachabilityDescription  @8@0:4
+- setReachabilityDescription:  v12@0:4@8
+- reachabilityRef  ^v8@0:4
+- setReachabilityRef:  v12@0:4^v8
+- setFlags:  v12@0:4I8
+- dealloc  v8@0:4
+- description  @8@0:4
+- delegate  @8@0:4
+- setDelegate:  v12@0:4@8
+@end
+
+@interface IMConnectionMonitor : NSObject
+  ivar _remoteHost  @"NSString"
+  ivar _delegate  @"<IMConnectionMonitorDelegate>"
++ alloc  @8@0:4
+- clear  v8@0:4
+- initWithRemoteHost:delegate:  @16@0:4@8@12
+- isImmediatelyReachable  c8@0:4
+- _setup  v8@0:4
+- goConnectedWithLocalSocketAddress:remoteSocketAddress:  v16@0:4@8@12
+- goDisconnected  v8@0:4
+- setDataConnectionActive:  v12@0:4c8
+- isDataConnectionActive  c8@0:4
+- requiresDataConnectionActivation  c8@0:4
+- remoteHost  @8@0:4
+- dealloc  v8@0:4
+- delegate  @8@0:4
+- setDelegate:  v12@0:4@8
+@end
+
+@interface IMNetworkConnectionMonitor : IMConnectionMonitor
+  ivar _hostReachability  @"IMReachability"
+  ivar _ipReachability  @"IMReachability"
+  ivar _hostFlags  I
+  ivar _ipFlags  I
+  ivar _isConnected  c
+  ivar _isSleeping  c
+- reachabilityDidChange:  v12@0:4@8
+- clear  v8@0:4
+- isImmediatelyReachable  c8@0:4
+- _setup  v8@0:4
+- goConnectedWithLocalSocketAddress:remoteSocketAddress:  v16@0:4@8@12
+- goDisconnected  v8@0:4
+- _clearReachability:flags:  v16@0:4^@8^I12
+- _doCallbackNow  v8@0:4
+- _doCallbackLater  v8@0:4
+- _networkManagedUpdated:  v12@0:4@8
+- _setupReachability  v8@0:4
+- _hostReachability  @8@0:4
+- set_hostReachability:  v12@0:4@8
+- _ipReachability  @8@0:4
+- set_ipReachability:  v12@0:4@8
+- _hostFlags  I8@0:4
+- set_hostFlags:  v12@0:4I8
+- _ipFlags  I8@0:4
+- set_ipFlags:  v12@0:4I8
+- _isConnected  c8@0:4
+- set_isConnected:  v12@0:4c8
+- _isSleeping  c8@0:4
+- set_isSleeping:  v12@0:4c8
+- systemDidWake  v8@0:4
+- systemWillSleep  v8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMXMLReparser : NSObject
+  ivar _parser  @"NSXMLParser"
+  ivar _output  @"NSMutableString"
+  ivar _context  @"IMXMLReparserContext"
+  ivar _error  @"NSError"
+  ivar _depth  I
+- parser:parseErrorOccurred:  v16@0:4@8@12
+- parser:foundCharacters:  v16@0:4@8@12
+- parser:didEndElement:namespaceURI:qualifiedName:  v24@0:4@8@12@16@20
+- parser:didStartElement:namespaceURI:qualifiedName:attributes:  v28@0:4@8@12@16@20@24
+- parseWithContext:  c12@0:4@8
+@end
+
+@interface IMXMLReparserContext : NSObject
+  ivar _inContent  @"NSString"
+  ivar _outContent  @"NSString"
+  ivar _attributesToPreserve  @"NSArray"
+  ivar _attributesToMerge  @"NSDictionary"
+  ivar _error  @"NSError"
+- _inContent  @8@0:4
+- _setOutContent:error:  v16@0:4@8@12
+- attributesToPreserve  @8@0:4
+- attributesToMerge  @8@0:4
+- initWithContent:attributesToPreserve:attributesToMerge:  @20@0:4@8@12@16
+- outContent  @8@0:4
+- error  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMHTMLToSuperParserContext : IMToSuperParserContext
+- name  @8@0:4
+@end
+
+@interface HTMLToSuper_Default_Frame : IMToSuperParserFrame
+- parser:context:foundCharacters:  v20@0:4@8@12@16
+@end
+
+@interface HTMLToSuper_A_Frame : HTMLToSuper_Default_Frame
+  ivar _shouldPopLink  c
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface HTMLToSuper_B_Frame : HTMLToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface HTMLToSuper_BR_Frame : HTMLToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+@end
+
+@interface HTMLToSuper_BODY_Frame : HTMLToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+@end
+
+@interface HTMLToSuper_EM_Frame : HTMLToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface HTMLToSuper_FONT_Frame : HTMLToSuper_Default_Frame
+  ivar _shouldPopBackgroundColor  c
+  ivar _shouldPopForegroundColor  c
+  ivar _shouldPopFontName  c
+  ivar _shouldPopFontSize  c
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface HTMLToSuper_I_Frame : HTMLToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface HTMLToSuper_S_Frame : HTMLToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface HTMLToSuper_SPAN_Frame : HTMLToSuper_Default_Frame
+  ivar _shouldPopBackgroundColor  c
+  ivar _shouldPopForegroundColor  c
+  ivar _shouldPopFontFamily  c
+  ivar _shouldPopFontSize  c
+  ivar _shouldDecrementBoldCount  c
+  ivar _shouldDecrementItalicCount  c
+  ivar _shouldDecrementUnderlineCount  c
+  ivar _shouldDecrementStrikeCount  c
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface HTMLToSuper_STRIKE_Frame : HTMLToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface HTMLToSuper_STRONG_Frame : HTMLToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface HTMLToSuper_U_Frame : HTMLToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface IMLocalObjectInternal : NSObject
+  ivar _lock  @"NSRecursiveLock"
+  ivar _target  @
+  ivar _connection  @"NSObject<OS_xpc_object>"
+  ivar _queue  @"NSObject<OS_dispatch_queue>"
+  ivar _deathLock  @"NSObject<OS_dispatch_semaphore>"
+  ivar _portName  @"NSString"
+  ivar _protocolChecker  @"NSProtocolChecker"
+  ivar _componentQueue  @"NSMutableArray"
+  ivar _componentQueueLock  @"NSLock"
+  ivar _componentQueueProcessingLock  @"NSRecursiveLock"
+  ivar _pendingComponentQueueProcessing  c
+  ivar _busyForwarding  c
+- dealloc  v8@0:4
+@end
+
+@interface IMLocalObject : NSObject
+  ivar _internal  @
++ initialize  v8@0:4
++ _registerIMLocalObject:  v12@0:4@8
++ _unregisterIMLocalObject:  v12@0:4@8
++ _registeredIMLocalObjectForPort:  @12@0:4I8
+- portName  @8@0:4
+- initWithTarget:protocol:  @16@0:4@8@12
+- isValid  c8@0:4
+- connection  @8@0:4
+- initWithTarget:connection:protocol:  @20@0:4@8@12@16
+- _portDidBecomeInvalid  v8@0:4
+- _portInterrupted  v8@0:4
+- _enqueueInvocation:  v12@0:4@8
+- initWithTarget:portName:protocol:  @20@0:4@8@12@16
+- _handleNewInvocations  v8@0:4
+- _cancelHandlerCompleted  v8@0:4
+- _clearPort:  v12@0:4c8
+- terminated  v8@0:4
+- isValidSelector:  c12@0:4:8
+- _handleInvocation:  c12@0:4@8
+- _peekInvocation  @8@0:4
+- _popInvocation  v8@0:4
+- handleInvocation:  c12@0:4@8
+- _noteNewInvocation  v8@0:4
+- _systemShutdown:  v12@0:4@8
+- setPortName:  v12@0:4@8
+- dealloc  v8@0:4
+- description  @8@0:4
+- target  @8@0:4
+- setTarget:  v12@0:4@8
+- invalidate  v8@0:4
+@end
+
+@interface IMRemoteObjectInternal : NSObject
+  ivar _lock  @"NSRecursiveLock"
+  ivar _connection  @"NSObject<OS_xpc_object>"
+  ivar _queue  @"NSObject<OS_dispatch_queue>"
+  ivar _deathPostPredicate  l
+  ivar _protocol  @"Protocol"
+  ivar _portName  @"NSString"
+  ivar _willBeTerminated  c
+  ivar _pid  i
+@end
+
+@interface IMRemoteObject : NSObject
+  ivar _internal  @
++ initialize  v8@0:4
++ _registerIMRemoteObject:  v12@0:4@8
++ _unregisterIMRemoteObject:  v12@0:4@8
++ _remoteObjects  @8@0:4
+- portName  @8@0:4
+- isValid  c8@0:4
+- methodSignatureForSelector:  @12@0:4:8
+- forwardInvocation:  v12@0:4@8
+- finalize  v8@0:4
+- connection  @8@0:4
+- pid  i8@0:4
+- setPid:  v12@0:4i8
+- initWithConnection:protocol:  @16@0:4@8@12
+- initWithConnection:protocol:alreadyConfigured:  @20@0:4@8@12c16
+- _portDidBecomeInvalid  v8@0:4
+- _systemShutdown:  v12@0:4@8
+- setPortName:  v12@0:4@8
+- _initWithConnection:portName:protocol:alreadyConfigured:  @24@0:4@8@12@16c20
+- _cleanupMachBitsCanPost:  v12@0:4c8
+- forwardXPCObject:  I12@0:4@8
+- initWithPortName:protocol:  @16@0:4@8@12
+- _queue  @8@0:4
+- dealloc  v8@0:4
+- description  @8@0:4
+- invalidate  v8@0:4
+@end
+
+@interface IMRemoteObjectBroadcaster : NSObject
+  ivar _queue  @"NSObject<OS_dispatch_queue>"
++ defaultBroadcaster  @8@0:4
+- broadcastProxyForTarget:protocol:  @16@0:4@8@12
+- isSendQueueEmpty  c8@0:4
+- broadcastProxyForTargets:protocol:  @16@0:4@8@12
+- flushProxy:  v12@0:4@8
+- _queue  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface Broadcaster : NSProxy
+  ivar _targets  @"NSArray"
+  ivar _parent  @"IMRemoteObjectBroadcaster"
+  ivar _protocol  @"Protocol"
+- methodSignatureForSelector:  @12@0:4:8
+- forwardInvocation:  v12@0:4@8
+- initWithNotifier:protocol:targets:  @20@0:4@8@12@16
+- dealloc  v8@0:4
+@end
+
+@interface IMNetworkManager : NSObject
++ alloc  @8@0:4
++ sharedInstance  @8@0:4
+@end
+
+@interface IMMobileNetworkManager : IMNetworkManager
+  ivar _lock  @"NSRecursiveLock"
+  ivar _disableFastDormancyTokens  @"NSMutableSet"
+  ivar _wiFiAutoAssociationTokens  @"NSMutableSet"
+  ivar _cellAutoAssociationTokens  @"NSMutableSet"
+  ivar _serverConnection  ^v
+  ivar _suspendDormancyAssertion  ^v
+  ivar _wifiManager  ^v
+  ivar _prefs  ^{__SCPreferences=}
+  ivar _ctServerConnection  ^{__CTServerConnection=}
+  ivar _cachedAirplaneMode  c
+  ivar _cellAssertion  ^v
+  ivar _isCachedAirplaneModeValid  c
+  ivar _applySkipCount  i
+  ivar _registered  c
+  ivar _shouldBringUpDataContext  c
+  ivar _dataContextActive  c
+- _prefs  ^{__SCPreferences=}8@0:4
+- refresh  v8@0:4
+- isWiFiEnabled  c8@0:4
+- lock  @8@0:4
+- setLock:  v12@0:4@8
+- removeFastDormancyDisableToken:  v12@0:4@8
+- addFastDormancyDisableToken:  v12@0:4@8
+- isAirplaneModeEnabled  c8@0:4
+- setRegistered:  v12@0:4c8
+- setDataConnectionActive:  v12@0:4c8
+- isDataConnectionActive  c8@0:4
+- _createWiFiManager  v8@0:4
+- _initializeSCPrefs:  v12@0:4@8
+- _createCTServerConnection  v8@0:4
+- _releaseCTServerConnection  v8@0:4
+- _adjustWiFiAutoAssociation  v8@0:4
+- _adjustCellularAutoAssociation  v8@0:4
+- _adjustFastDormancyTokens  v8@0:4
+- _synchronize  v8@0:4
+- _getValueForKey:  ^v12@0:4@8
+- autoAssociateWiFi  c8@0:4
+- _adjustWiFiAutoAssociationLocked  v8@0:4
+- autoAssociateCellular  c8@0:4
+- disableFastDormancy  c8@0:4
+- _setFastDormancySuspended:  v12@0:4c8
+- __adjustFastDormancyTokens  v8@0:4
+- _adjustCelluarAutoAssociation  v8@0:4
+- _isDataConnectionAvailable  c8@0:4
+- _makeDataConnectionAvailable:  v12@0:4c8
+- _notifyTarget:  v12@0:4I8
+- isHostingWiFiHotSpot  c8@0:4
+- willTryToAutoAssociateWiFiNetwork  c8@0:4
+- willTryToSearchForWiFiNetwork  c8@0:4
+- wiFiSignalStrength  @8@0:4
+- wiFiScaledRSSI  @8@0:4
+- wiFiScaledRate  @8@0:4
+- isWiFiAssociated  c8@0:4
+- addWiFiAutoAssociationClientToken:  v12@0:4@8
+- removeWiFiAutoAssociationClientToken:  v12@0:4@8
+- showNetworkOptions  v8@0:4
+- addCellularAutoAssociationClientToken:  v12@0:4@8
+- removeCellularAutoAssociationClientToken:  v12@0:4@8
+- _ctServerCallBack:object:userInfo:  v20@0:4@8@12@16
+- inValidSIMState  c8@0:4
+- dataConnectionExists  c8@0:4
+- has2GDataConnection  c8@0:4
+- hasLTEDataConnection  c8@0:4
+- isDataSwitchEnabled  c8@0:4
+- disableFastDormancyTokens  @8@0:4
+- setDisableFastDormancyTokens:  v12@0:4@8
+- wiFiAutoAssociationTokens  @8@0:4
+- setWiFiAutoAssociationTokens:  v12@0:4@8
+- cellularAutoAssociationTokens  @8@0:4
+- setCellularAutoAssociationTokens:  v12@0:4@8
+- _serverConnection  ^v8@0:4
+- set_serverConnection:  v12@0:4^v8
+- _suspendDormancyAssertion  ^v8@0:4
+- set_suspendDormancyAssertion:  v12@0:4^v8
+- wifiManager  ^v8@0:4
+- setWifiManager:  v12@0:4^v8
+- set_prefs:  v12@0:4^{__SCPreferences=}8
+- _ctServerConnection  ^{__CTServerConnection=}8@0:4
+- set_ctServerConnection:  v12@0:4^{__CTServerConnection=}8
+- _cachedAirplaneMode  c8@0:4
+- set_cachedAirplaneMode:  v12@0:4c8
+- _cellAssertion  ^v8@0:4
+- set_cellAssertion:  v12@0:4^v8
+- _isCachedAirplaneModeValid  c8@0:4
+- set_isCachedAirplaneModeValid:  v12@0:4c8
+- _applySkipCount  i8@0:4
+- set_applySkipCount:  v12@0:4i8
+- registered  c8@0:4
+- shouldBringUpDataContext  c8@0:4
+- setShouldBringUpDataContext:  v12@0:4c8
+- dataContextActive  c8@0:4
+- setDataContextActive:  v12@0:4c8
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDesktopNetworkManager : IMNetworkManager
+@end
+
+@interface IMLockdownManager : NSObject
+  ivar _state  i
+  ivar _settingUpActivationState  c
+  ivar _isInternalInstall  c
+  ivar _isCarrierInstall  c
+  ivar _hasShownMismatchedSIM  c
+  ivar _hasShownWaitingAlertThisSession  c
++ sharedInstance  @8@0:4
+- _isInternalInstall  c8@0:4
+- isInternalInstall  c8@0:4
+- copyIdentity  ^{__SecIdentity=}8@0:4
+- lockdownState  i8@0:4
+- _setupActivationState  v8@0:4
+- _activationFailed  v8@0:4
+- _resetActivationState  v8@0:4
+- isCarrierInstall  c8@0:4
+- uniqueDeviceIdentifier  @8@0:4
+- _state  i8@0:4
+- set_state:  v12@0:4i8
+- _settingUpActivationState  c8@0:4
+- set_settingUpActivationState:  v12@0:4c8
+- set_isInternalInstall:  v12@0:4c8
+- _isCarrierInstall  c8@0:4
+- set_isCarrierInstall:  v12@0:4c8
+- _hasShownMismatchedSIM  c8@0:4
+- set_hasShownMismatchedSIM:  v12@0:4c8
+- _hasShownWaitingAlertThisSession  c8@0:4
+- set_hasShownWaitingAlertThisSession:  v12@0:4c8
+- init  @8@0:4
+- dealloc  v8@0:4
+- isActivated  c8@0:4
+@end
+
+@interface _IMLogFileCompressor : NSObject
+  ivar _archivers  @"NSMutableArray"
++ sharedInstance  @8@0:4
+- fileCopierDidStart:  v12@0:4@8
+- fileCopierDidFinish:  v12@0:4@8
+- compressPath:toPath:  v16@0:4@8@12
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMLogging : NSObject
++ logAtLevel:type:category:format:  v24@0:4i8@12@16@20
++ logAtLevel:type:category:insertProcessInfo:format:arguments:  v32@0:4i8@12@16c20@24^v28
++ logString:toFolder:toFileNamed:  v20@0:4@8@12@16
++ logFileDirectory  @8@0:4
++ loggingEnabledForLevel:  c12@0:4i8
++ stringForDate  @8@0:4
++ logAtLevel:type:category:insertProcessInfo:format:  v28@0:4i8@12@16c20@24
++ logAtLevel:type:category:format:arguments:  v28@0:4i8@12@16@20^v24
++ dateFormatter  @8@0:4
++ timeFormatter  @8@0:4
++ enableConsoleLoggingForLevel:  v12@0:4i8
+@end
+
+@interface IMSuperToSuperSanitizerContext : IMFromSuperParserContext
+  ivar _content  @"NSMutableAttributedString"
+  ivar _attachments  @"NSMutableArray"
+  ivar _backgroundColor  @"NSString"
+  ivar _foregroundColor  @"NSString"
+  ivar _offset  I
+  ivar _baseWritingDirection  i
+  ivar _extractAttachments  c
+  ivar _hadBaseWritingDirectionAttribute  c
+- resultsForLogging  @8@0:4
+- parserDidEnd:  v12@0:4@8
+- parserDidStart:bodyAttributes:  v16@0:4@8@12
+- parser:foundAttributes:inRange:fileTransferGUID:filename:bookmark:width:height:  v44@0:4@8@12{_NSRange=II}16@24@28@32@36@40
+- parser:foundAttributes:inRange:characters:  v28@0:4@8@12{_NSRange=II}16@24
+- initWithAttributedString:extractAttachments:  @16@0:4@8c12
+- sanitizedContent  @8@0:4
+- attachments  @8@0:4
+- dealloc  v8@0:4
+- name  @8@0:4
+@end
+
+@interface IMTimer : NSObject
+  ivar _timer  @
+  ivar _target  @
+  ivar _userInfo  @"NSDictionary"
+  ivar _name  @"NSString"
+  ivar _timeInterval  d
+  ivar _selector  :
+  ivar _wakeDevice  c
+- initWithTimeInterval:name:shouldWake:target:selector:userInfo:  @36@0:4d8@16c20@24:28@32
+- setFireTimeInterval:  v16@0:4d8
+- dealloc  v8@0:4
+- userInfo  @8@0:4
+- invalidate  v8@0:4
+@end
+
+@interface IMDistributedLock : NSObject
++ alloc  @8@0:4
+- tryLock  c8@0:4
+- initWithName:  @12@0:4@8
+- lock  v8@0:4
+- unlock  v8@0:4
+- name  @8@0:4
+@end
+
+@interface IMEmbeddedDistributedLock : IMDistributedLock
+  ivar _fd  i
+  ivar _name  @"NSString"
+- tryLock  c8@0:4
+- initWithName:  @12@0:4@8
+- lock  v8@0:4
+- unlock  v8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- name  @8@0:4
+- setName:  v12@0:4@8
+@end
+
+@interface _IMNotificationObservationHelper : NSObject
+  ivar _observer  @
+  ivar _object  @
+  ivar _block  @?
+  ivar _name  @"NSString"
+- _notification:  v12@0:4@8
+- initWithObserver:name:object:block:  @24@0:4@8@12@16@?20
+- dealloc  v8@0:4
+@end
+
+@interface IMRemoteURLConnection : NSObject
+  ivar _request  @"NSURLRequest"
+  ivar _block  @?
+  ivar _connection  @"NSObject<OS_xpc_object>"
+  ivar _loading  c
+  ivar _forceCellularIfPossible  c
+- load  v8@0:4
+- _disconnected  v8@0:4
+- forceCellularIfPossible  c8@0:4
+- initWithURLRequest:completionBlock:  @16@0:4@8@?12
+- setForceCellularIfPossible:  v12@0:4c8
+- _connect  c8@0:4
+- dealloc  v8@0:4
+- cancel  v8@0:4
+- _disconnect  c8@0:4
+@end
+
+@interface IMNetworkReachability : NSObject
+  ivar localWiFiRef  c
+  ivar reachabilityRef  ^{__SCNetworkReachability=}
++ reachabilityWithHostName:  @12@0:4@8
++ reachabilityWithAddress:  @12@0:4r^{sockaddr_in=CCS{in_addr=I}[8c]}8
++ reachabilityForInternetConnection  @8@0:4
++ reachabilityForLocalWiFi  @8@0:4
+- localWiFiStatusForFlags:  i12@0:4I8
+- networkStatusForFlags:  i12@0:4I8
+- currentReachabilityStatus  i8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMNetworkAvailability : NSObject
+  ivar _guid  @"NSString"
+  ivar _timer  @"NSTimer"
+  ivar _context  ^v
+  ivar _timeout  d
+  ivar _wifiTimeout  d
+  ivar _startTime  d
+  ivar _flags  I
+  ivar _options  I
+  ivar _completionBlock  @?
+- context  ^v8@0:4
+- setContext:  v12@0:4^v8
+- start  v8@0:4
+- _cancel  v8@0:4
+- initWithFlags:options:timeout:wifiTimeout:completionBlock:  @36@0:4I8I12d16d24@?32
+- _timerHit:  v12@0:4@8
+- _setTimer  v8@0:4
+- initWithFlags:timeout:wifiTimeout:completionBlock:  @32@0:4I8d12d20@?28
+- dealloc  v8@0:4
+- cancel  v8@0:4
+@end
+
+@interface IMPasswordManager : NSObject
+  ivar _runningQueries  @"NSMutableSet"
+  ivar _accountStore  @"ACAccountStore"
++ _loginUserNotificationForService:user:isForBadPassword:showForgetPassword:  @24@0:4@8@12c16c20
++ sharedInstance  @8@0:4
+- setPasswordForUsername:service:password:outRequestID:completionBlock:  v28@0:4@8@12@16^@20@?24
+- setAuthTokenForUsername:service:authToken:outRequestID:completionBlock:  v28@0:4@8@12@16^@20@?24
+- supportsAuthTokenRequests  c8@0:4
+- requestPasswordForUsername:service:badPassword:showForgotPassword:outRequestID:completionBlock:  v32@0:4@8@12c16c20^@24@?28
+- fetchPasswordForUsername:service:outRequestID:completionBlock:  v24@0:4@8@12^@16@?20
+- requestAuthTokenForUsername:service:badPassword:showForgotPassword:outRequestID:completionBlock:  v32@0:4@8@12c16c20^@24@?28
+- fetchAuthTokenForUsername:service:outRequestID:completionBlock:  v24@0:4@8@12^@16@?20
+- cancelRequestID:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMMultiQueue : NSObject
+  ivar _queueMap  @"NSMutableDictionary"
+- _popEnqueuedBlockWithGUID:key:  v16@0:4@8@12
+- _addBlock:withGUID:forKey:  v20@0:4@?8@12@16
+- addBlock:withTimeout:forKey:  v24@0:4@?8d12@20
+- addBlock:forKey:  v16@0:4@?8@12
+- dealloc  v8@0:4
+@end
+
+@interface IMPurgableObject : NSObject
+  ivar _instanceObject  @
+  ivar _setupBlock  @?
+  ivar _cleanupBlock  @?
+  ivar _queue  @"NSObject<OS_dispatch_queue>"
+- _receivedMemoryWarning:  v12@0:4@8
+- _cleanupInstance  v8@0:4
+- _setupInstance  v8@0:4
+- initWithSetupBlock:cleanupBlock:queue:  @20@0:4@?8@?12@16
+- instance  @8@0:4
+- dealloc  v8@0:4
+@end
+
+### /System/Library/PrivateFrameworks/FTServices.framework/FTServices (57 classes)
+
+@interface FTMessage : NSObject
+  ivar _context  @
+  ivar _clientInfo  @"NSDictionary"
+  ivar _serviceData  @"NSData"
+  ivar _uniqueID  I
+  ivar _userInfo  @"NSDictionary"
+  ivar _creationDate  @"NSDate"
+  ivar _forceCellular  c
+  ivar _topic  @"NSString"
+  ivar _timeout  d
+  ivar _completionBlock  @?
+  ivar _usingOutgoingPush  c
+  ivar _deliveryAcknowledgementBlock  @?
+  ivar _wantsResponse  c
+  ivar _cachedBody  @"NSDictionary"
+  ivar _dsAuthID  @"NSString"
+  ivar _wantsBinaryPush  c
+  ivar _wantsIntegerUniqueIDs  c
+  ivar _responseAlert  @"NSDictionary"
+- uniqueID  I8@0:4
+- setUniqueID:  v12@0:4I8
+- completionBlock  @?8@0:4
+- setTimeout:  v16@0:4d8
+- timeout  d8@0:4
+- pushToken  @8@0:4
+- context  @8@0:4
+- setContext:  v12@0:4@8
+- setCompletionBlock:  v12@0:4@?8
+- setUserInfo:  v12@0:4@8
+- bagKey  @8@0:4
+- command  i8@0:4
+- setTopic:  v12@0:4@8
+- setServiceData:  v12@0:4@8
+- setDeliveryAcknowledgementBlock:  v12@0:4@?8
+- _setCachedBody:  v12@0:4@8
+- setResponseAlertInfo:  v12@0:4@8
+- dsAuthID  @8@0:4
+- forceCellular  c8@0:4
+- setForceCellular:  v12@0:4c8
+- serviceData  @8@0:4
+- clientInfo  @8@0:4
+- wantsResponse  c8@0:4
+- setWantsResponse:  v12@0:4c8
+- wantsBinaryPush  c8@0:4
+- setWantsBinaryPush:  v12@0:4c8
+- wantsIntegerUniqueIDs  c8@0:4
+- setWantsIntegerUniqueIDs:  v12@0:4c8
+- _cacheBody  v8@0:4
+- requiredKeys  @8@0:4
+- messageBodyUsingCache  @8@0:4
+- uniqueIDString  @8@0:4
+- wantsCompressedBody  c8@0:4
+- wantsJSONBody  c8@0:4
+- wantsHTTPHeaders  c8@0:4
+- wantsHTTPGet  c8@0:4
+- wantsBagKey  c8@0:4
+- wantsCFNetworkTimeout  c8@0:4
+- wantsManagedRetries  c8@0:4
+- wantsAPSRetries  c8@0:4
+- ignoresNetworkConnectivity  c8@0:4
+- wantsSignature  c8@0:4
+- wantsBodySignature  c8@0:4
+- wantsCustomRetryInterval  c8@0:4
+- customRetryInterval  d8@0:4
+- payloadCanBeLogged  c8@0:4
+- isValidMessage  c8@0:4
+- pushPrivateKey  ^{__SecKey=}8@0:4
+- pushPublicKey  ^{__SecKey=}8@0:4
+- pushCertificate  @8@0:4
+- provisionPrivateKey  ^{__SecKey=}8@0:4
+- provisionPublicKey  ^{__SecKey=}8@0:4
+- provisionCertificate  @8@0:4
+- IDCertificate  @8@0:4
+- hasRequiredKeys:  c12@0:4^@8
+- wantsUserAgentInHeaders  c8@0:4
+- userAgentHeaderString  @8@0:4
+- responseCommand  i8@0:4
+- additionalMessageHeaders  @8@0:4
+- additionalQueryStringParameters  @8@0:4
+- additionalMessageHeadersForOutgoingPush  @8@0:4
+- nonStandardMessageHeadersForOutgoingPush  @8@0:4
+- handleResponseHeaders:  v12@0:4@8
+- handleResponseDictionary:  v12@0:4@8
+- _usingOutgoingPush  c8@0:4
+- _setUsingOutgoingPush:  v12@0:4c8
+- deliveryAcknowledgementBlock  @?8@0:4
+- _cachedBody  @8@0:4
+- setDSAuthID:  v12@0:4@8
+- responseAlertInfo  @8@0:4
+- identityPrivateKey  ^{__SecKey=}8@0:4
+- setClientInfo:  v12@0:4@8
+- identityPublicKey  ^{__SecKey=}8@0:4
+- topic  @8@0:4
+- messageBody  @8@0:4
+- creationDate  @8@0:4
+- setCreationDate:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- userInfo  @8@0:4
+@end
+
+@interface FTInitiateMessage : FTFaceTimeMessage
+  ivar _selfBlob  @"NSData"
+  ivar _selfPushToken  @"NSData"
+  ivar _selfNATType  @"NSNumber"
+  ivar _selfNatIP  @"NSData"
+  ivar _peers  @"NSArray"
+  ivar _aliasUserID  @"NSString"
+  ivar _aliasSignature  @"NSData"
+  ivar _canonicalizedPeers  @"NSArray"
+  ivar _regionInformation  @"NSDictionary"
+- setPeers:  v12@0:4@8
+- peers  @8@0:4
+- setSelfBlob:  v12@0:4@8
+- selfBlob  @8@0:4
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- additionalMessageHeaders  @8@0:4
+- additionalMessageHeadersForOutgoingPush  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- aliasUserID  @8@0:4
+- aliasSignature  @8@0:4
+- regionInformation  @8@0:4
+- selfPushToken  @8@0:4
+- selfNatIP  @8@0:4
+- selfNATType  @8@0:4
+- setCanonicalizedPeers:  v12@0:4@8
+- setSelfPushToken:  v12@0:4@8
+- setSelfNATType:  v12@0:4@8
+- setSelfNatIP:  v12@0:4@8
+- setAliasUserID:  v12@0:4@8
+- setAliasSignature:  v12@0:4@8
+- canonicalizedPeers  @8@0:4
+- setRegionInformation:  v12@0:4@8
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTAcceptMessage : FTFaceTimeMessage
+  ivar _selfPushToken  @"NSData"
+  ivar _selfNATType  @"NSNumber"
+  ivar _selfBlob  @"NSData"
+  ivar _selfNATIP  @"NSData"
+  ivar _peerID  @"NSString"
+  ivar _peerPushToken  @"NSData"
+  ivar _peerNATType  @"NSNumber"
+  ivar _peerBlob  @"NSData"
+  ivar _peerNATIP  @"NSData"
+  ivar _relayType  @"NSNumber"
+  ivar _relayConnectionId  @"NSData"
+  ivar _relayTransactionIdAlloc  @"NSData"
+  ivar _relayTokenAllocReq  @"NSData"
+  ivar _selfRelayIP  @"NSData"
+  ivar _selfRelayPort  @"NSNumber"
+  ivar _peerRelayIP  @"NSData"
+  ivar _peerRelayPort  @"NSNumber"
+- peerID  @8@0:4
+- setPeerID:  v12@0:4@8
+- setPeerPushToken:  v12@0:4@8
+- setPeerNATType:  v12@0:4@8
+- setPeerNATIP:  v12@0:4@8
+- setPeerBlob:  v12@0:4@8
+- peerNATIP  @8@0:4
+- peerBlob  @8@0:4
+- peerPushToken  @8@0:4
+- peerNATType  @8@0:4
+- setSelfBlob:  v12@0:4@8
+- selfBlob  @8@0:4
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- selfPushToken  @8@0:4
+- selfNATType  @8@0:4
+- setSelfPushToken:  v12@0:4@8
+- setSelfNATType:  v12@0:4@8
+- selfNATIP  @8@0:4
+- setRelayType:  v12@0:4@8
+- setRelayConnectionId:  v12@0:4@8
+- setRelayTransactionIdAlloc:  v12@0:4@8
+- setRelayTokenAllocReq:  v12@0:4@8
+- setSelfRelayIP:  v12@0:4@8
+- setSelfRelayPort:  v12@0:4@8
+- setPeerRelayIP:  v12@0:4@8
+- setPeerRelayPort:  v12@0:4@8
+- setSelfNATIP:  v12@0:4@8
+- relayType  @8@0:4
+- relayConnectionId  @8@0:4
+- relayTransactionIdAlloc  @8@0:4
+- relayTokenAllocReq  @8@0:4
+- selfRelayIP  @8@0:4
+- selfRelayPort  @8@0:4
+- peerRelayIP  @8@0:4
+- peerRelayPort  @8@0:4
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTCancelMessage : FTFaceTimeMessage
+  ivar _peers  @"NSArray"
+  ivar _reason  @"NSNumber"
+- setPeers:  v12@0:4@8
+- peers  @8@0:4
+- setReason:  v12@0:4@8
+- reason  @8@0:4
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- messageBody  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTRejectMessage : FTFaceTimeMessage
+  ivar _selfPushToken  @"NSData"
+  ivar _peerPushToken  @"NSData"
+  ivar _peerID  @"NSString"
+  ivar _reason  @"NSNumber"
+- peerID  @8@0:4
+- setPeerID:  v12@0:4@8
+- setReason:  v12@0:4@8
+- setPeerPushToken:  v12@0:4@8
+- peerPushToken  @8@0:4
+- reason  @8@0:4
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- selfPushToken  @8@0:4
+- setSelfPushToken:  v12@0:4@8
+- messageBody  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTRelayInitateMessage : FTFaceTimeMessage
+  ivar _selfPushToken  @"NSData"
+  ivar _selfNatType  @"NSNumber"
+  ivar _selfNATIP  @"NSNumber"
+  ivar _peerID  @"NSString"
+  ivar _peerPushToken  @"NSData"
+  ivar _peerNatType  @"NSNumber"
+  ivar _peerNATIP  @"NSNumber"
+  ivar _relayType  @"NSNumber"
+  ivar _relayConnectionId  @"NSData"
+  ivar _relayTransactionIdAlloc  @"NSData"
+  ivar _relayTokenAllocReq  @"NSData"
+  ivar _selfRelayIP  @"NSData"
+  ivar _selfRelayPort  @"NSNumber"
+  ivar _peerRelayIP  @"NSData"
+  ivar _peerRelayPort  @"NSNumber"
+- peerID  @8@0:4
+- setPeerID:  v12@0:4@8
+- setPeerPushToken:  v12@0:4@8
+- setPeerNATIP:  v12@0:4@8
+- peerNATIP  @8@0:4
+- peerPushToken  @8@0:4
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- selfPushToken  @8@0:4
+- setSelfPushToken:  v12@0:4@8
+- selfNATIP  @8@0:4
+- setRelayType:  v12@0:4@8
+- setRelayConnectionId:  v12@0:4@8
+- setRelayTransactionIdAlloc:  v12@0:4@8
+- setRelayTokenAllocReq:  v12@0:4@8
+- setSelfRelayIP:  v12@0:4@8
+- setSelfRelayPort:  v12@0:4@8
+- setPeerRelayIP:  v12@0:4@8
+- setPeerRelayPort:  v12@0:4@8
+- setSelfNATIP:  v12@0:4@8
+- relayType  @8@0:4
+- relayConnectionId  @8@0:4
+- relayTransactionIdAlloc  @8@0:4
+- relayTokenAllocReq  @8@0:4
+- selfRelayIP  @8@0:4
+- selfRelayPort  @8@0:4
+- peerRelayIP  @8@0:4
+- peerRelayPort  @8@0:4
+- selfNatType  @8@0:4
+- peerNatType  @8@0:4
+- setSelfNatType:  v12@0:4@8
+- setPeerNatType:  v12@0:4@8
+- messageBody  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTRelayUpdateMessage : FTFaceTimeMessage
+  ivar _selfPushToken  @"NSData"
+  ivar _selfRelayBlob  @"NSData"
+  ivar _peerID  @"NSString"
+  ivar _peerPushToken  @"NSData"
+  ivar _relayType  @"NSNumber"
+  ivar _relayConnectionID  @"NSData"
+  ivar _relayTransactionIDAlloc  @"NSData"
+  ivar _relayTokenAllocRes  @"NSData"
+  ivar _selfRelayIP  @"NSData"
+  ivar _selfRelayPort  @"NSNumber"
+  ivar _selfRelayNATIP  @"NSData"
+  ivar _selfRelayNATPort  @"NSNumber"
+  ivar _peerRelayIP  @"NSData"
+  ivar _peerRelayPort  @"NSNumber"
+- peerID  @8@0:4
+- setPeerID:  v12@0:4@8
+- setPeerPushToken:  v12@0:4@8
+- peerPushToken  @8@0:4
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- selfPushToken  @8@0:4
+- setSelfPushToken:  v12@0:4@8
+- setRelayType:  v12@0:4@8
+- setSelfRelayIP:  v12@0:4@8
+- setSelfRelayPort:  v12@0:4@8
+- setPeerRelayIP:  v12@0:4@8
+- setPeerRelayPort:  v12@0:4@8
+- relayType  @8@0:4
+- selfRelayIP  @8@0:4
+- selfRelayPort  @8@0:4
+- peerRelayIP  @8@0:4
+- peerRelayPort  @8@0:4
+- relayConnectionID  @8@0:4
+- relayTransactionIDAlloc  @8@0:4
+- relayTokenAllocRes  @8@0:4
+- selfRelayNATIP  @8@0:4
+- selfRelayNATPort  @8@0:4
+- selfRelayBlob  @8@0:4
+- setSelfRelayBlob:  v12@0:4@8
+- setRelayConnectionID:  v12@0:4@8
+- setRelayTransactionIDAlloc:  v12@0:4@8
+- setRelayTokenAllocRes:  v12@0:4@8
+- setSelfRelayNATIP:  v12@0:4@8
+- setSelfRelayNATPort:  v12@0:4@8
+- messageBody  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTRelayCancelMessage : FTFaceTimeMessage
+  ivar _peerID  @"NSString"
+  ivar _peerPushToken  @"NSData"
+  ivar _relayType  @"NSNumber"
+  ivar _reason  @"NSNumber"
+  ivar _relayConnectionID  @"NSData"
+  ivar _selfRelayIP  @"NSData"
+  ivar _selfRelayPort  @"NSNumber"
+  ivar _peerRelayIP  @"NSData"
+  ivar _peerRelayPort  @"NSNumber"
+- peerID  @8@0:4
+- setPeerID:  v12@0:4@8
+- setReason:  v12@0:4@8
+- setPeerPushToken:  v12@0:4@8
+- peerPushToken  @8@0:4
+- reason  @8@0:4
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- setRelayType:  v12@0:4@8
+- setSelfRelayIP:  v12@0:4@8
+- setSelfRelayPort:  v12@0:4@8
+- setPeerRelayIP:  v12@0:4@8
+- setPeerRelayPort:  v12@0:4@8
+- relayType  @8@0:4
+- selfRelayIP  @8@0:4
+- selfRelayPort  @8@0:4
+- peerRelayIP  @8@0:4
+- peerRelayPort  @8@0:4
+- relayConnectionID  @8@0:4
+- setRelayConnectionID:  v12@0:4@8
+- messageBody  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTDeregistrationMessage : FTIDSMessage
+  ivar _validationData  @"NSData"
+  ivar _protocolVersion  @"NSString"
+- setProtocolVersion:  v12@0:4@8
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- hasRequiredKeys:  c12@0:4^@8
+- additionalMessageHeaders  @8@0:4
+- validationData  @8@0:4
+- setValidationData:  v12@0:4@8
+- messageBody  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- protocolVersion  @8@0:4
+@end
+
+@interface FTRegistrationMessage : FTIDSMessage
+  ivar _validationData  @"NSData"
+  ivar _responseBindings  @"NSArray"
+  ivar _hardwareVersion  @"NSString"
+  ivar _osVersion  @"NSString"
+  ivar _capabilities  @"NSArray"
+  ivar _softwareVersion  @"NSString"
+  ivar _protocolVersion  @"NSString"
+  ivar _deviceName  @"NSString"
+  ivar _responseNextHBI  @"NSNumber"
+- setProtocolVersion:  v12@0:4@8
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- hasRequiredKeys:  c12@0:4^@8
+- additionalMessageHeaders  @8@0:4
+- nonStandardMessageHeadersForOutgoingPush  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- softwareVersion  @8@0:4
+- setResponseBindings:  v12@0:4@8
+- setResponseNextHBI:  v12@0:4@8
+- setOsVersion:  v12@0:4@8
+- setHardwareVersion:  v12@0:4@8
+- deviceName  @8@0:4
+- osVersion  @8@0:4
+- hardwareVersion  @8@0:4
+- setCapabilities:  v12@0:4@8
+- validationData  @8@0:4
+- setValidationData:  v12@0:4@8
+- setSoftwareVersion:  v12@0:4@8
+- responseBindings  @8@0:4
+- responseNextHBI  @8@0:4
+- messageBody  @8@0:4
+- capabilities  @8@0:4
+- setDeviceName:  v12@0:4@8
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- protocolVersion  @8@0:4
+@end
+
+@interface FTServerBag : NSObject
+  ivar _connectionMonitor  @"IMConnectionMonitor"
+  ivar _bagURL  @"NSURL"
+  ivar _apsEnvironmentName  @"NSString"
+  ivar _bag  @"NSDictionary"
+  ivar _cachedBag  @"NSDictionary"
+  ivar _urlRequest  @"NSMutableURLRequest"
+  ivar _remoteURLConnection  @"IMRemoteURLConnection"
+  ivar _bagQueue  @"NSObject<OS_dispatch_queue>"
+  ivar _cachedURLString  @"NSString"
+  ivar _trustStatus  i
+  ivar _certData  @"NSData"
+  ivar _cachedHash  @"NSString"
+  ivar _loadDate  @"NSDate"
+  ivar _cacheTime  @"NSNumber"
+  ivar _allowSelfSignedCertificates  c
+  ivar _allowUnsignedBags  c
++ sharedInstanceForBagType:  @12@0:4i8
++ _bagCreationLock  @8@0:4
++ _sharedInstanceForClass:  @12@0:4#8
++ _sharedInstance  @8@0:4
++ sharedInstance  @8@0:4
+- _clearCache  v8@0:4
+- isLoading  c8@0:4
+- isLoaded  c8@0:4
+- _invalidate  v8@0:4
+- _loadDate  @8@0:4
+- urlWithKey:  @12@0:4@8
+- _cacheTime  @8@0:4
+- _bagDefaultsDomain  @8@0:4
+- _bag  @8@0:4
+- _setCachedBag:  v12@0:4@8
+- _setCachedURLString:  v12@0:4@8
+- _setBag:  v12@0:4@8
+- _setTrustStatus:  v12@0:4i8
+- __saveCacheToPrefs  v8@0:4
+- _cachedBag  @8@0:4
+- _saveCacheToPrefs  v8@0:4
+- _setCachedHash:  v12@0:4@8
+- _loadFromCache  v8@0:4
+- _saveToCache  v8@0:4
+- _allowInvalid  c8@0:4
+- _trustStatus  i8@0:4
+- _loadFromDictionary:returningError:  c16@0:4@8^@12
+- _loadFromSignedDictionary:returningError:  c16@0:4@8^@12
+- _cachedURLString  @8@0:4
+- isInDebilitatedMode  c8@0:4
+- _generateURLRequest  v8@0:4
+- _cancelCurrentLoad  v8@0:4
+- _processBagResultData:response:inBackground:  v20@0:4@8@12c16
+- _startBagLoad:  v12@0:4c8
+- _bagExternallyReloaded  v8@0:4
+- _initWithURL:apsEnvironmentName:allowSelfSignedCertificates:allowUnsignedBags:  @24@0:4@8@12c16c20
+- _connectionMonitor  @8@0:4
+- set_connectionMonitor:  v12@0:4@8
+- setBagURL:  v12@0:4@8
+- setApsEnvironmentName:  v12@0:4@8
+- _urlRequest  @8@0:4
+- set_urlRequest:  v12@0:4@8
+- _remoteURLConnection  @8@0:4
+- set_remoteURLConnection:  v12@0:4@8
+- _bagQueue  @8@0:4
+- set_bagQueue:  v12@0:4@8
+- _certData  @8@0:4
+- set_certData:  v12@0:4@8
+- _cachedHash  @8@0:4
+- set_loadDate:  v12@0:4@8
+- set_cacheTime:  v12@0:4@8
+- allowSelfSignedCertificates  c8@0:4
+- setAllowSelfSignedCertificates:  v12@0:4c8
+- allowUnsignedBags  c8@0:4
+- setAllowUnsignedBags:  v12@0:4c8
+- startBagLoad  v8@0:4
+- isServerAvailable  c8@0:4
+- apsEnvironmentName  @8@0:4
+- bagURL  @8@0:4
+- forceBagLoad  v8@0:4
+- connectionMonitorDidUpdate:  v12@0:4@8
+- dealloc  v8@0:4
+- objectForKey:  @12@0:4@8
+@end
+
+@interface FTMessageDelivery : NSObject
+  ivar _retries  I
+  ivar _protocolVersion  @"NSNumber"
+  ivar _queue  @"FTMessageQueue"
+  ivar _userAgent  @"NSString"
+  ivar _maxConcurrentMessages  I
+  ivar _retryInAirplaneMode  c
+  ivar _timer  @"IMTimer"
++ _errorForTDMessageDeliveryStatus:userInfo:  @16@0:4i8@12
++ APNSMessageDeliveryClass  #8@0:4
++ HTTPMessageDeliveryClass  #8@0:4
++ alloc  @8@0:4
+- userAgent  @8@0:4
+- setProtocolVersion:  v12@0:4@8
+- _clearRetryTimer  v8@0:4
+- _sendMessageAsynchronously:error:  c16@0:4@8^@12
+- _retryTimerHit:  v12@0:4@8
+- queue:hitTimeoutForMessage:  v16@0:4@8@12
+- _informDelegateAboutMessage:error:result:resultCode:  v24@0:4@8@12@16i20
+- allMessages  @8@0:4
+- busy  c8@0:4
+- hasQueuedItems  c8@0:4
+- _setRetryTimer:  v16@0:4d8
+- maxMessageSize  i8@0:4
+- _signMessage:useDataSignatures:body:queryString:intoDictionary:  v28@0:4@8c12@16@20@24
+- maxConcurrentMessages  I8@0:4
+- setMaxConcurrentMessages:  v12@0:4I8
+- retryInAirplaneMode  c8@0:4
+- setUserAgent:  v12@0:4@8
+- sendMessage:  c12@0:4@8
+- setRetryInAirplaneMode:  v12@0:4c8
+- currentMessage  @8@0:4
+- queuedMessages  @8@0:4
+- cancelMessage:  v12@0:4@8
+- _queue  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- invalidate  v8@0:4
+- protocolVersion  @8@0:4
+@end
+
+@interface FTMessageQueue : NSObject
+  ivar _queue  @"NSMutableArray"
+  ivar _addDates  @"NSMutableArray"
+  ivar _delegate  @"<FTMessageQueueDelegate>"
+- addMessage:  c12@0:4@8
+- removeMessage:  c12@0:4@8
+- removeAllMessages  v8@0:4
+- topMessage  @8@0:4
+- _timeoutHit  v8@0:4
+- _clearTimeout  v8@0:4
+- _setTimeout  v8@0:4
+- dequeueTopMessage  @8@0:4
+- set_queue:  v12@0:4@8
+- _addDates  @8@0:4
+- set_addDates:  v12@0:4@8
+- messages  @8@0:4
+- _queue  @8@0:4
+- count  i8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- delegate  @8@0:4
+- setDelegate:  v12@0:4@8
+@end
+
+@interface FTEmbeddedPushHandler : FTPushHandler
+  ivar _apsConnection  @"APSConnection"
+  ivar _cachedPushToken  @"NSData"
+  ivar _APSConnectionClass  #
+  ivar _cachedStatus  i
+- pushToken  @8@0:4
+- connectionStatus  i8@0:4
+- updateTopics  v8@0:4
+- _updateTopics  v8@0:4
+- requestKeepAlive  v8@0:4
+- _handleInitatePush:  v12@0:4@8
+- _handleAcceptPush:  v12@0:4@8
+- _handleRejectPush:  v12@0:4@8
+- _handleCancelPush:  v12@0:4@8
+- _handleSendPush:  v12@0:4@8
+- _handleRelayInitatePush:  v12@0:4@8
+- _handleRelayUpdatePush:  v12@0:4@8
+- _handleRelayCancelPush:  v12@0:4@8
+- _handleReloadBagPush:  v12@0:4@8
+- _handleReregisterPush:  v12@0:4@8
+- _handleEmailConfirmedPush:  v12@0:4@8
+- _handleProfileHandlesUpdatedPush:  v12@0:4@8
+- _handleDevicesUpdatedPush:  v12@0:4@8
+- _handleIncomingTextMessage:  v12@0:4@8
+- _handleIncomingAttachmentMessage:  v12@0:4@8
+- _handlePendingMessagePush:  v12@0:4@8
+- _handleIncomingDeliveryReceipt:  v12@0:4@8
+- _handleIncomingMessageError:  v12@0:4@8
+- _handleIncomingReadReceipt:  v12@0:4@8
+- _handleGenericCommandPush:  v12@0:4@8
+- _handleGenericDataPush:  v12@0:4@8
+- connection:didReceivePublicToken:  v16@0:4@8@12
+- connection:didReceiveMessageForTopic:userInfo:  v20@0:4@8@12@16
+- connection:didSendOutgoingMessage:  v16@0:4@8@12
+- connection:didFailToSendOutgoingMessage:error:  v20@0:4@8@12@16
+- connection:didChangeConnectedStatus:  v16@0:4@8c12
+- connectionDidReconnect:  v12@0:4@8
+- initWithTopics:  @12@0:4@8
+- _ignoreIncomingPushes  v8@0:4
+- _acceptIncomingPushes  v8@0:4
+- setRegistered:  v12@0:4c8
+- dealloc  v8@0:4
+@end
+
+@interface FTPushHandler : NSObject
+  ivar _topics  @"NSMutableSet"
+  ivar _handlers  @"NSMutableArray"
+  ivar _registeredForPush  c
++ alloc  @8@0:4
++ sharedInstance  @8@0:4
+- pushToken  @8@0:4
+- connectionStatus  i8@0:4
+- topics  @8@0:4
+- updateTopics  v8@0:4
+- requestKeepAlive  v8@0:4
+- addTopic:  v12@0:4@8
+- removeTopic:  v12@0:4@8
+- addListener:  v12@0:4@8
+- removeListener:  v12@0:4@8
+- initWithTopics:  @12@0:4@8
+- setTopics:  v12@0:4@8
+- setRegistered:  v12@0:4c8
+- registered  c8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface FTDeviceSupport : NSObject
+  ivar _lastDeviceID  @"NSString"
+  ivar _model  @"NSString"
+  ivar _productName  @"NSString"
+  ivar _productVersion  @"NSString"
+  ivar _buildVersion  @"NSString"
+  ivar _blockPost  c
+  ivar _supportsFrontCamera  c
+  ivar _supportsBackCamera  c
+  ivar _supportsiMessage  c
+  ivar _supportsSMS  c
+  ivar _supportsMMS  c
+  ivar _supportsFT  c
+  ivar _supportsWiFi  c
+  ivar _supportsWLAN  c
+  ivar _supportsNonWiFiFaceTime  c
+  ivar _supportsCellularData  c
+  ivar _shouldUseSIMState  c
+  ivar _commCenterDead  c
+  ivar _simBecameNotReady  c
+  ivar _carrierBundleSupported  i
+  ivar _iMessageAllowedToken  i
+  ivar _faceTimeBlocked  c
+  ivar _iMessageBlocked  c
+  ivar _accountModificationRestricted  c
+  ivar _performanceClass  i
++ sharedInstance  @8@0:4
+- profileConnectionDidReceiveRestrictionChangedNotification:userInfo:  v16@0:4@8@12
+- profileConnectionDidReceiveEffectiveSettingsChangedNotification:userInfo:  v16@0:4@8@12
+- model  @8@0:4
+- isTelephonyDevice  c8@0:4
+- madridSupported  c8@0:4
+- performanceClass  i8@0:4
+- supportsSMS  c8@0:4
+- madridAvailable  c8@0:4
+- supportsCellularData  c8@0:4
+- supportsWiFi  c8@0:4
+- supportsWLAN  c8@0:4
+- accountModificationRestricted  c8@0:4
+- _watchNotifyTokens  v8@0:4
+- _updateCapabilities  v8@0:4
+- _updateManagedConfigurationSettings  v8@0:4
+- _registerForCapabilityNotifications  v8@0:4
+- _registerForManagedConfigurationNotifications  v8@0:4
+- _unregisterForManagedConfigurationNotifications  v8@0:4
+- _unregisterForCapabilityNotifications  v8@0:4
+- madridBlocked  c8@0:4
+- conferencingEnabled  c8@0:4
+- conferencingBlocked  c8@0:4
+- conferencingAllowed  c8@0:4
+- telephonyCapabilities  @8@0:4
+- supportsSimultaneousVoiceAndDataRightNow  c8@0:4
+- _updateDeviceID  c8@0:4
+- _generateProductInformation  v8@0:4
+- _operatorChanged  v8@0:4
+- _carrierChanged  v8@0:4
+- commCenterDead  c8@0:4
+- iMessageAvailable  c8@0:4
+- iMessageBlocked  c8@0:4
+- faceTimeBlocked  c8@0:4
+- deviceTypeIDPrefix  @8@0:4
+- _handleSIMInserted:  v12@0:4@8
+- _simStatusChanged:  v12@0:4@8
+- _handleTechnologyChange:  v12@0:4@8
+- _handlePhoneNumberRegistrationStateChanged:  v12@0:4@8
+- _handleRegistrationStateChanged:  v12@0:4@8
+- CTNetworkInformation  @8@0:4
+- supportsMMS  c8@0:4
+- deviceName  @8@0:4
+- deviceID  @8@0:4
+- nonWifiFaceTimeAvailable  c8@0:4
+- faceTimeSupported  c8@0:4
+- faceTimeAvailable  c8@0:4
+- supportsFrontFacingCamera  c8@0:4
+- supportsBackFacingCamera  c8@0:4
+- wantsBreakBeforeMake  c8@0:4
+- supportsNonWiFiFaceTime  c8@0:4
+- deviceIDPrefix  @8@0:4
+- productName  @8@0:4
+- productBuildVersion  @8@0:4
+- isC2KEquipment  c8@0:4
+- telephoneNumber  @8@0:4
+- registrationSupported  c8@0:4
+- supportsSMSIdentification  c8@0:4
+- supportsAppleIDIdentification  c8@0:4
+- iMessageSupported  c8@0:4
+- _registerForLockdownNotifications  v8@0:4
+- _registerForCarrierNotifications  v8@0:4
+- _unregisterForCarrierNotifications  v8@0:4
+- _unregisterForCoreTelephonyNotifications  v8@0:4
+- _unregisterForCommCenterReadyNotifications  v8@0:4
+- _registerForCommCenterReadyNotifications  v8@0:4
+- _registerForCoreTelephonyNotifications  v8@0:4
+- _commCenterAlive  v8@0:4
+- _lockdownStateChanged:  v12@0:4@8
+- carrierSettingsChanged:  v12@0:4@8
+- userAgentString  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- productVersion  @8@0:4
+- deviceType  i8@0:4
+@end
+
+@interface FTProfileAuthenticationMessage : FTProfileMessage
+  ivar _username  @"NSString"
+  ivar _password  @"NSString"
+  ivar _responseProfileID  @"NSString"
+  ivar _responseAuthToken  @"NSString"
+- setUsername:  v12@0:4@8
+- username  @8@0:4
+- setPassword:  v12@0:4@8
+- password  @8@0:4
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- payloadCanBeLogged  c8@0:4
+- hasRequiredKeys:  c12@0:4^@8
+- additionalMessageHeaders  @8@0:4
+- additionalMessageHeadersForOutgoingPush  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseProfileID:  v12@0:4@8
+- setResponseAuthorizationToken:  v12@0:4@8
+- responseProfileID  @8@0:4
+- responseAuthorizationToken  @8@0:4
+- messageBody  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTProfileMessage : FTMessage
+  ivar _pushCert  @"NSData"
+  ivar _pushKey  ^{__SecKey=}
+  ivar _pushPublicKey  ^{__SecKey=}
+  ivar _pushToken  @"NSData"
+  ivar _authToken  @"NSString"
+  ivar _profileID  @"NSString"
+- setAuthToken:  v12@0:4@8
+- authToken  @8@0:4
+- pushToken  @8@0:4
+- setPushToken:  v12@0:4@8
+- command  i8@0:4
+- wantsBinaryPush  c8@0:4
+- wantsCompressedBody  c8@0:4
+- wantsHTTPHeaders  c8@0:4
+- wantsBagKey  c8@0:4
+- pushPrivateKey  ^{__SecKey=}8@0:4
+- pushPublicKey  ^{__SecKey=}8@0:4
+- pushCertificate  @8@0:4
+- hasRequiredKeys:  c12@0:4^@8
+- responseCommand  i8@0:4
+- additionalMessageHeaders  @8@0:4
+- additionalMessageHeadersForOutgoingPush  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setPushPublicKey:  v12@0:4^{__SecKey=}8
+- profileID  @8@0:4
+- setProfileID:  v12@0:4@8
+- setPushPrivateKey:  v12@0:4^{__SecKey=}8
+- setPushCertificate:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTRegionSupport : NSObject
+  ivar _regions  @"NSArray"
+  ivar _delivery  @"FTMessageDelivery"
++ sharedInstance  @8@0:4
+- startLoading  v8@0:4
+- isLoading  c8@0:4
+- isLoaded  c8@0:4
+- regions  @8@0:4
+- regionForID:  @12@0:4@8
+- _buildMessageDeliveryIfNeeded  v8@0:4
+- flushRegions  v8@0:4
+- _regions  @8@0:4
+- set_regions:  v12@0:4@8
+- _delivery  @8@0:4
+- set_delivery:  v12@0:4@8
+- dealloc  v8@0:4
+@end
+
+@interface FTRegion : NSObject
+  ivar _dictionary  @"NSDictionary"
+  ivar _subRegions  @"NSArray"
+  ivar _parentRegion  @"FTRegion"
+- label  @8@0:4
+- _initWithDictionary:  @12@0:4@8
+- basePhoneNumber  @8@0:4
+- isoCode  @8@0:4
+- parentRegion  @8@0:4
+- regionWithID:  @12@0:4@8
+- subRegions  @8@0:4
+- _setParentRegion:  v12@0:4@8
+- _dictionary  @8@0:4
+- set_dictionary:  v12@0:4@8
+- _parentRegion  @8@0:4
+- set_parentRegion:  v12@0:4@8
+- regionID  @8@0:4
+- dealloc  v8@0:4
+- description  @8@0:4
+@end
+
+@interface FTGetRegionMetadataMessage : FTMessage
+  ivar _language  @"NSString"
+  ivar _responseRegionInformation  @"NSDictionary"
+- language  @8@0:4
+- setLanguage:  v12@0:4@8
+- bagKey  @8@0:4
+- command  i8@0:4
+- wantsBinaryPush  c8@0:4
+- requiredKeys  @8@0:4
+- wantsCompressedBody  c8@0:4
+- wantsHTTPHeaders  c8@0:4
+- wantsHTTPGet  c8@0:4
+- wantsBagKey  c8@0:4
+- responseCommand  i8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- responseRegionInformation  @8@0:4
+- setResponseRegionInformation:  v12@0:4@8
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTProfileGetDefaultInvitationContext : FTProfileMessage
+  ivar _responseBasePhoneNumber  @"NSString"
+  ivar _responseRegionID  @"NSString"
+  ivar _responseExtraInfo  @"NSDictionary"
+  ivar _responseValidated  c
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseBasePhoneNumber:  v12@0:4@8
+- setResponseRegionID:  v12@0:4@8
+- setResponseExtraInfo:  v12@0:4@8
+- setResponseValidated:  v12@0:4c8
+- responseRegionID  @8@0:4
+- responseBasePhoneNumber  @8@0:4
+- responseExtraInfo  @8@0:4
+- responseValidated  c8@0:4
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTProfileValidateInvitationContext : FTProfileMessage
+  ivar _basePhoneNumber  @"NSString"
+  ivar _regionID  @"NSString"
+  ivar _responseBasePhoneNumber  @"NSString"
+  ivar _responseRegionID  @"NSString"
+  ivar _responseExtraInfo  @"NSDictionary"
+- bagKey  @8@0:4
+- basePhoneNumber  @8@0:4
+- requiredKeys  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseBasePhoneNumber:  v12@0:4@8
+- setResponseRegionID:  v12@0:4@8
+- setResponseExtraInfo:  v12@0:4@8
+- setRegionID:  v12@0:4@8
+- responseRegionID  @8@0:4
+- responseBasePhoneNumber  @8@0:4
+- responseExtraInfo  @8@0:4
+- setBasePhoneNumber:  v12@0:4@8
+- regionID  @8@0:4
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTNetworkSupport : NSObject
+  ivar _APSConnectionClass  #
+  ivar _apsConnection  @"APSConnection"
+  ivar _reliabilityAttemptTimer  @"NSTimer"
+  ivar _enableCriticalReliability  c
+  ivar _criticalReliabilityEnabledState  c
++ sharedInstance  @8@0:4
+- networkReachable  c8@0:4
+- networkActive  c8@0:4
+- networkEnabled  c8@0:4
+- _clearReliabilityTimeoutInterval  v8@0:4
+- _tryToEnableReliability  v8@0:4
+- _createAPSConnectionIfNeeded  v8@0:4
+- _reallySetCriticalReliability:  v12@0:4c8
+- _setReliabilityTimeoutInterval  v8@0:4
+- enableCriticalReliability  c8@0:4
+- allowAnyNetwork  c8@0:4
+- validNetworkEnabled  c8@0:4
+- validNetworkActive  c8@0:4
+- validNetworkReachable  c8@0:4
+- willSearchForNetwork  c8@0:4
+- wiFiActiveAndReachable  c8@0:4
+- dataActiveAndReachable  c8@0:4
+- setEnableCriticalReliability:  v12@0:4c8
+@end
+
+@interface FTEmbeddedReachability : NSObject
+  ivar localWiFiRef  c
+  ivar reachabilityRef  ^{__SCNetworkReachability=}
++ reachabilityWithHostName:  @12@0:4@8
++ reachabilityWithAddress:  @12@0:4r^{sockaddr_in=CCS{in_addr=I}[8c]}8
++ reachabilityForInternetConnection  @8@0:4
++ reachabilityForLocalWiFi  @8@0:4
+- localWiFiStatusForFlags:  i12@0:4I8
+- networkStatusForFlags:  i12@0:4I8
+- stopNotifer  v8@0:4
+- startNotifer  c8@0:4
+- connectionRequired  c8@0:4
+- currentReachabilityStatus  i8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface FTMessageDelivery_HTTP : FTMessageDelivery
+  ivar _remoteConnection  @"IMRemoteURLConnection"
+- _sendMessageAsynchronously:error:  c16@0:4@8^@12
+- queue:hitTimeoutForMessage:  v16@0:4@8@12
+- busy  c8@0:4
+- _serverBagLoaded:  v12@0:4@8
+- _cleanupURLConnection  v8@0:4
+- _dequeueIfNeeded  v8@0:4
+- _urlRequestWithURL:andData:message:  @20@0:4@8@12@16
+- _tryRetryMessageWithTimeInterval:  c16@0:4d8
+- _processResultData:forMessage:error:  @20@0:4@8@12^@16
+- _notifyDelegateAboutError:forMessage:  v16@0:4@8@12
+- _updateWiFiAssertions  v8@0:4
+- sendMessage:  c12@0:4@8
+- cancelMessage:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- invalidate  v8@0:4
+@end
+
+@interface FTMessageDelivery_APS : FTMessageDelivery
+  ivar _APSConnectionClass  #
+  ivar _APSOutgoingMessageClass  #
+  ivar _connection  @"APSConnection"
+  ivar _messageSize  i
+  ivar _enabledTopics  @"NSMutableArray"
+  ivar _ftMessageMap  @"NSMutableDictionary"
+  ivar _startDateMap  @"NSMutableDictionary"
+  ivar _bodyMap  @"NSMutableDictionary"
+  ivar _apsMessageMap  @"NSMutableDictionary"
+  ivar _timerMap  @"NSMutableDictionary"
+  ivar _deathTimerMap  @"NSMutableDictionary"
+  ivar _retriesMap  @"NSMutableDictionary"
++ sharedInstance  @8@0:4
+- _sendMessageAsynchronously:error:  c16@0:4@8^@12
+- queue:hitTimeoutForMessage:  v16@0:4@8@12
+- allMessages  @8@0:4
+- busy  c8@0:4
+- maxMessageSize  i8@0:4
+- _updateTopics  v8@0:4
+- connection:didReceivePublicToken:  v16@0:4@8@12
+- connection:didReceiveMessageForTopic:userInfo:  v20@0:4@8@12@16
+- connection:didSendOutgoingMessage:  v16@0:4@8@12
+- connection:didFailToSendOutgoingMessage:error:  v20@0:4@8@12@16
+- connection:didChangeConnectedStatus:  v16@0:4@8c12
+- _serverBagLoaded:  v12@0:4@8
+- _dequeueIfNeeded  v8@0:4
+- _notifyDelegateAboutError:forMessage:  v16@0:4@8@12
+- _updateWiFiAssertions  v8@0:4
+- _invalidateTimerForMessageID:  v12@0:4@8
+- _messageCompletelyTimedOut:  v12@0:4@8
+- _invalidateDeathTimerForMessageID:  v12@0:4@8
+- _currentMessages  @8@0:4
+- _apsOutgoingMessageForFTMessage:  @12@0:4@8
+- _messageForAPSOutgoingMessage:  @12@0:4@8
+- _fillMessageParameters:ftMessage:  c16@0:4^@8^@12
+- _retryCountForMessage:  i12@0:4@8
+- _messageNeedsRetry:  v12@0:4@8
+- _setMapForMessage:apsMessage:messageBody:timeoutTime:timeoutSelector:retries:  v36@0:4@8@12@16d20:28@32
+- _clearMapForMessageID:  v12@0:4@8
+- _messageSendTimedOut:  v12@0:4@8
+- _apsMessageForMessage:body:  @16@0:4@8@12
+- _noteMessageSent:ftMessage:body:  v20@0:4@8@12@16
+- _noteMessageFailed:ftMessage:allowRetry:error:  v24@0:4@8@12c16@20
+- _bodyForMessage:  @12@0:4@8
+- _sendMessage:ftMessage:  v16@0:4@8@12
+- _requiredTopics  @8@0:4
+- _apsMessageBodyForMessage:  @12@0:4@8
+- _powerLogEvent:dictionary:  v16@0:4@8@12
+- _noteMessageSucceeded:ftMessage:error:result:resultCode:  v28@0:4@8@12@16@20i24
+- _isBusyWithMessage:  c12@0:4@8
+- _noteMessageACKd:ftMessage:  v16@0:4@8@12
+- _currentAPSMessages  @8@0:4
+- _currentTimers  @8@0:4
+- sendMessage:  c12@0:4@8
+- cancelMessage:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- invalidate  v8@0:4
+@end
+
+@interface FTFaceTimeMessage : FTIDSMessage
+  ivar _sessionToken  @"NSData"
+- sessionToken  @8@0:4
+- setSessionToken:  v12@0:4@8
+- requiredKeys  @8@0:4
+- isValidMessage  c8@0:4
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTiMessageMessage : FTMessage
+  ivar _wantsDeliveryStatus  @"NSNumber"
+  ivar _deliveryStatusContext  @"NSDictionary"
+  ivar _version  @"NSNumber"
+- version  @8@0:4
+- setVersion:  v12@0:4@8
+- wantsHTTPHeaders  c8@0:4
+- wantsAPSRetries  c8@0:4
+- wantsUserAgentInHeaders  c8@0:4
+- userAgentHeaderString  @8@0:4
+- wantsDeliveryStatus  @8@0:4
+- setWantsDeliveryStatus:  v12@0:4@8
+- deliveryStatusContext  @8@0:4
+- setDeliveryStatusContext:  v12@0:4@8
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTiMessageTextMessage : FTiMessagePeerMessage
+  ivar _messageData  @"NSData"
+  ivar _encryptionType  @"NSString"
+- command  i8@0:4
+- requiredKeys  @8@0:4
+- payloadCanBeLogged  c8@0:4
+- setMessageData:  v12@0:4@8
+- encryptionType  @8@0:4
+- setEncryptionType:  v12@0:4@8
+- messageBody  @8@0:4
+- messageData  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTiMessageIDQuery : FTIDSMessage
+  ivar _uri  @"NSString"
+  ivar _responseIdentities  @"NSArray"
+  ivar _responseSessionTokens  @"NSArray"
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- wantsHTTPGet  c8@0:4
+- wantsManagedRetries  c8@0:4
+- wantsBodySignature  c8@0:4
+- hasRequiredKeys:  c12@0:4^@8
+- additionalQueryStringParameters  @8@0:4
+- handleResponseHeaders:  v12@0:4@8
+- handleResponseDictionary:  v12@0:4@8
+- responseIdentities  @8@0:4
+- setResponseIdentities:  v12@0:4@8
+- responseSessionTokens  @8@0:4
+- setResponseSessionTokens:  v12@0:4@8
+- messageBody  @8@0:4
+- uri  @8@0:4
+- setURI:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTiMessageReadReceiptMessage : FTiMessagePeerMessage
+- command  i8@0:4
+- init  @8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTiMessageGenericMessage : FTiMessagePeerMessage
+  ivar _data  @"NSData"
+- setData:  v12@0:4@8
+- command  i8@0:4
+- requiredKeys  @8@0:4
+- messageBody  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- data  @8@0:4
+@end
+
+@interface FTiMessagePendingOfflineMessageReponse : FTiMessageMessage
+- command  i8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTiMessageRequestMMCSDownloadToken : FTiMessageMessage
+  ivar _owner  @"NSString"
+  ivar _responseAuthToken  @"NSString"
+  ivar _signature  @"NSData"
+  ivar _responseRequestorID  @"NSString"
+- signature  @8@0:4
+- command  i8@0:4
+- requiredKeys  @8@0:4
+- responseCommand  i8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- responseAuthToken  @8@0:4
+- setResponseAuthToken:  v12@0:4@8
+- responseRequestorID  @8@0:4
+- setResponseRequestorID:  v12@0:4@8
+- setSignature:  v12@0:4@8
+- messageBody  @8@0:4
+- owner  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- setOwner:  v12@0:4@8
+@end
+
+@interface FTiMessageRequestMMCSUploadToken : FTiMessageMessage
+  ivar _responseAuthToken  @"NSString"
+  ivar _length  @"NSNumber"
+  ivar _signature  @"NSData"
+  ivar _responseRequestURL  @"NSString"
+  ivar _responseRequestorID  @"NSString"
+- signature  @8@0:4
+- command  i8@0:4
+- requiredKeys  @8@0:4
+- responseCommand  i8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- responseAuthToken  @8@0:4
+- setResponseAuthToken:  v12@0:4@8
+- responseRequestorID  @8@0:4
+- setResponseRequestorID:  v12@0:4@8
+- setSignature:  v12@0:4@8
+- setResponseRequestURL:  v12@0:4@8
+- responseRequestURL  @8@0:4
+- messageBody  @8@0:4
+- length  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- setLength:  v12@0:4@8
+@end
+
+@interface FTiMessagePeerMessage : FTiMessageMessage
+  ivar _targetToken  @"NSData"
+  ivar _targetPeerID  @"NSString"
+  ivar _sourcePeerID  @"NSString"
+  ivar _targetSessionToken  @"NSData"
+  ivar _targetPeers  @"NSArray"
+  ivar _messageID  @"NSString"
+- requiredKeys  @8@0:4
+- targetPeerID  @8@0:4
+- setTargetPeerID:  v12@0:4@8
+- sourcePeerID  @8@0:4
+- setSourcePeerID:  v12@0:4@8
+- targetPeers  @8@0:4
+- setTargetPeers:  v12@0:4@8
+- targetToken  @8@0:4
+- setTargetToken:  v12@0:4@8
+- targetSessionToken  @8@0:4
+- setTargetSessionToken:  v12@0:4@8
+- setMessageID:  v12@0:4@8
+- messageBody  @8@0:4
+- messageID  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTiMessageAttachmentMessage : FTiMessageTextMessage
+- command  i8@0:4
+- messageBody  @8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTProvisionMessage : FTMessage
+  ivar _service  @"NSString"
+  ivar _linkInfo  @"NSDictionary"
+  ivar _realm  @"NSString"
+  ivar _csr  @"NSData"
+  ivar _authenticationInfo  @"NSDictionary"
+  ivar _userID  @"NSString"
+  ivar _URIs  @"NSArray"
+  ivar _responseCertificate  @"NSData"
+  ivar _responseBindings  @"NSArray"
+  ivar _protocolVersion  @"NSString"
+- realm  @8@0:4
+- setProtocolVersion:  v12@0:4@8
+- bagKey  @8@0:4
+- command  i8@0:4
+- wantsBinaryPush  c8@0:4
+- requiredKeys  @8@0:4
+- wantsCompressedBody  c8@0:4
+- wantsHTTPHeaders  c8@0:4
+- wantsBagKey  c8@0:4
+- responseCommand  i8@0:4
+- additionalMessageHeaders  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseBindings:  v12@0:4@8
+- linkInfo  @8@0:4
+- csr  @8@0:4
+- authenticationInfo  @8@0:4
+- setResponseCertificate:  v12@0:4@8
+- service  @8@0:4
+- userID  @8@0:4
+- responseBindings  @8@0:4
+- setRealm:  v12@0:4@8
+- setCsr:  v12@0:4@8
+- setUserID:  v12@0:4@8
+- setLinkInfo:  v12@0:4@8
+- setAuthenticationInfo:  v12@0:4@8
+- setURIs:  v12@0:4@8
+- responseCertificate  @8@0:4
+- URIs  @8@0:4
+- messageBody  @8@0:4
+- setService:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- protocolVersion  @8@0:4
+@end
+
+@interface FTIDSMessage : FTMessage
+  ivar _pushCert  @"NSData"
+  ivar _pushKey  ^{__SecKey=}
+  ivar _identityKey  ^{__SecKey=}
+  ivar _identityCert  @"NSData"
+  ivar _provisionKey  ^{__SecKey=}
+  ivar _provisionCert  @"NSData"
+  ivar _pushPublicKey  ^{__SecKey=}
+  ivar _provisionPublicKey  ^{__SecKey=}
+  ivar _identityPublicKey  ^{__SecKey=}
+  ivar _pushToken  @"NSData"
+- pushToken  @8@0:4
+- setPushToken:  v12@0:4@8
+- command  i8@0:4
+- wantsBinaryPush  c8@0:4
+- wantsCompressedBody  c8@0:4
+- wantsHTTPHeaders  c8@0:4
+- wantsBagKey  c8@0:4
+- wantsSignature  c8@0:4
+- wantsBodySignature  c8@0:4
+- pushPrivateKey  ^{__SecKey=}8@0:4
+- pushPublicKey  ^{__SecKey=}8@0:4
+- pushCertificate  @8@0:4
+- provisionPrivateKey  ^{__SecKey=}8@0:4
+- provisionPublicKey  ^{__SecKey=}8@0:4
+- provisionCertificate  @8@0:4
+- IDCertificate  @8@0:4
+- responseCommand  i8@0:4
+- additionalMessageHeaders  @8@0:4
+- setPushPublicKey:  v12@0:4^{__SecKey=}8
+- setIDCertificate:  v12@0:4@8
+- setIdentityPrivateKey:  v12@0:4^{__SecKey=}8
+- setIdentityPublicKey:  v12@0:4^{__SecKey=}8
+- setProvisionPublicKey:  v12@0:4^{__SecKey=}8
+- setPushPrivateKey:  v12@0:4^{__SecKey=}8
+- setPushCertificate:  v12@0:4@8
+- identityPrivateKey  ^{__SecKey=}8@0:4
+- setProvisionPrivateKey:  v12@0:4^{__SecKey=}8
+- setProvisionCertificate:  v12@0:4@8
+- identityPublicKey  ^{__SecKey=}8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTiMessageServerBag : FTServerBag
++ _bagCreationLock  @8@0:4
++ _sharedInstanceForClass:  @12@0:4#8
++ sharedInstance  @8@0:4
+- _bagDefaultsDomain  @8@0:4
+- init  @8@0:4
+@end
+
+@interface FTFaceTimeServerBag : FTServerBag
++ _bagCreationLock  @8@0:4
+- _bagDefaultsDomain  @8@0:4
+- isInDebilitatedMode  c8@0:4
+- init  @8@0:4
+@end
+
+@interface FTEntitlementSupport : NSObject
+  ivar _ctServerConnection  ^{__CTServerConnection=}
+  ivar _entitlementStatus  ^{__CFString=}
++ sharedInstance  @8@0:4
+- _registerForCTEntitlementNotifications  c8@0:4
+- _unregisterForCTEntitlementNotifications  v8@0:4
+- _handleEntitlementNotification:  v12@0:4^{__CFDictionary=}8
+- _registrationStateChanged  v8@0:4
+- _cleanupMachInfo  v8@0:4
+- _setupCTServerConnection  c8@0:4
+- _disconnectCTServerConnection  c8@0:4
+- _reconnectCTServerConnectionIfNecessary  c8@0:4
+- _handleCTServiceRequestName:userInfo:contextInfo:  v20@0:4^{__CFString=}8^{__CFDictionary=}12^v16
+- faceTimeNonWiFiEntitled  c8@0:4
+- registrationState  @8@0:4
+- init  @8@0:4
+@end
+
+@interface FTiMessageGenericCommandMessage : FTiMessagePeerMessage
+- command  i8@0:4
+- init  @8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTiMessageErrorMessage : FTiMessagePeerMessage
+  ivar _failedMessageID  @"NSString"
+  ivar _failureReason  @"NSNumber"
+- command  i8@0:4
+- failedMessageID  @8@0:4
+- setFailedMessageID:  v12@0:4@8
+- setFailureReason:  v12@0:4@8
+- messageBody  @8@0:4
+- failureReason  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTInitializeValidationMessage : FTMessage
+  ivar _sessionInfoRequest  @"NSData"
+  ivar _responseSessionInfo  @"NSData"
+  ivar _responseTTL  @"NSNumber"
+  ivar _pushToken  @"NSData"
+- pushToken  @8@0:4
+- setPushToken:  v12@0:4@8
+- bagKey  @8@0:4
+- command  i8@0:4
+- wantsBinaryPush  c8@0:4
+- requiredKeys  @8@0:4
+- wantsCompressedBody  c8@0:4
+- wantsHTTPHeaders  c8@0:4
+- wantsBagKey  c8@0:4
+- responseCommand  i8@0:4
+- additionalMessageHeaders  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- sessionInfoRequest  @8@0:4
+- setResponseSessionInfo:  v12@0:4@8
+- setResponseTTL:  v12@0:4@8
+- responseSessionInfo  @8@0:4
+- responseTTL  @8@0:4
+- setSessionInfoRequest:  v12@0:4@8
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTCanonicalizeMessage : FTMessage
+  ivar _URIs  @"NSArray"
+  ivar _regionContext  @"NSDictionary"
+  ivar _responseNodes  @"NSArray"
+- bagKey  @8@0:4
+- command  i8@0:4
+- wantsBinaryPush  c8@0:4
+- requiredKeys  @8@0:4
+- wantsCompressedBody  c8@0:4
+- wantsHTTPHeaders  c8@0:4
+- wantsBagKey  c8@0:4
+- responseCommand  i8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- regionContext  @8@0:4
+- setRegionContext:  v12@0:4@8
+- responseNodes  @8@0:4
+- setResponseNodes:  v12@0:4@8
+- setURIs:  v12@0:4@8
+- URIs  @8@0:4
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTValidationCertificateMessage : FTMessage
+  ivar _responseCertificateData  @"NSData"
+  ivar _pushToken  @"NSData"
+- pushToken  @8@0:4
+- setPushToken:  v12@0:4@8
+- bagKey  @8@0:4
+- command  i8@0:4
+- wantsBinaryPush  c8@0:4
+- requiredKeys  @8@0:4
+- wantsCompressedBody  c8@0:4
+- wantsHTTPHeaders  c8@0:4
+- wantsHTTPGet  c8@0:4
+- wantsBagKey  c8@0:4
+- responseCommand  i8@0:4
+- additionalMessageHeaders  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseCertificateData:  v12@0:4@8
+- responseCertificateData  @8@0:4
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTSendMessage : FTFaceTimeMessage
+  ivar _peers  @"NSArray"
+  ivar _reason  @"NSNumber"
+  ivar _selfPushToken  @"NSData"
+- setPeers:  v12@0:4@8
+- peers  @8@0:4
+- setReason:  v12@0:4@8
+- reason  @8@0:4
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- selfPushToken  @8@0:4
+- setSelfPushToken:  v12@0:4@8
+- messageBody  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTProfileGetHandlesMessage : FTProfileMessage
+  ivar _responseHandles  @"NSArray"
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseHandles:  v12@0:4@8
+- responseHandles  @8@0:4
+- messageBody  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTProfileValidateHandleMessage : FTProfileMessage
+  ivar _uri  @"NSString"
+  ivar _responseVettingStatus  @"NSNumber"
+  ivar _deviceName  @"NSString"
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseVettingStatus:  v12@0:4@8
+- deviceName  @8@0:4
+- responseVettingStatus  @8@0:4
+- messageBody  @8@0:4
+- URI  @8@0:4
+- setURI:  v12@0:4@8
+- setDeviceName:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTProfileLinkHandleMessage : FTProfileMessage
+  ivar _uri  @"NSString"
+  ivar _authenticationData  @"NSDictionary"
+  ivar _responseVettingStatus  @"NSNumber"
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- wantsSignature  c8@0:4
+- wantsBodySignature  c8@0:4
+- additionalMessageHeaders  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseVettingStatus:  v12@0:4@8
+- responseVettingStatus  @8@0:4
+- authenticationData  @8@0:4
+- setAuthenticationData:  v12@0:4@8
+- messageBody  @8@0:4
+- URI  @8@0:4
+- setURI:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTProfileUnlinkHandleMessage : FTProfileMessage
+  ivar _uri  @"NSString"
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- wantsSignature  c8@0:4
+- wantsBodySignature  c8@0:4
+- additionalMessageHeaders  @8@0:4
+- messageBody  @8@0:4
+- URI  @8@0:4
+- setURI:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTProfileGetDevicesMessage : FTProfileMessage
+  ivar _service  @"NSString"
+  ivar _responseDevices  @"NSArray"
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseDevices:  v12@0:4@8
+- service  @8@0:4
+- responseDevices  @8@0:4
+- messageBody  @8@0:4
+- setService:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+@end
+
+@interface FTUserConfiguration : NSObject
++ sharedInstance  @8@0:4
+- cellularFaceTimeEnabled  c8@0:4
+- setCellularFaceTimeEnabled:  v12@0:4c8
+- _nonWifiFaceTimeEntitled  c8@0:4
+- _adequateInternalOrCarrierInstall  c8@0:4
+- setAllowAnyNetwork:  v12@0:4c8
+- allowAnyNetwork  c8@0:4
+@end
+
+@interface FTGetDependentRegistrationMessage : FTMessage
+  ivar _service  @"NSString"
+  ivar _realm  @"NSString"
+  ivar _authenticationInfo  @"NSDictionary"
+  ivar _userID  @"NSString"
+  ivar _responseRegistrations  @"NSArray"
+  ivar _protocolVersion  @"NSString"
+- realm  @8@0:4
+- setProtocolVersion:  v12@0:4@8
+- bagKey  @8@0:4
+- command  i8@0:4
+- wantsBinaryPush  c8@0:4
+- requiredKeys  @8@0:4
+- wantsCompressedBody  c8@0:4
+- wantsHTTPHeaders  c8@0:4
+- wantsBagKey  c8@0:4
+- responseCommand  i8@0:4
+- additionalMessageHeaders  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- authenticationInfo  @8@0:4
+- setResponseRegistrations:  v12@0:4@8
+- service  @8@0:4
+- userID  @8@0:4
+- setRealm:  v12@0:4@8
+- setUserID:  v12@0:4@8
+- setAuthenticationInfo:  v12@0:4@8
+- responseRegistrations  @8@0:4
+- messageBody  @8@0:4
+- setService:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- protocolVersion  @8@0:4
+@end
+
+@interface FTRecoverSignatureMessage : FTIDSMessage
+  ivar _responseSignature  @"NSData"
+  ivar _protocolVersion  @"NSString"
+- setProtocolVersion:  v12@0:4@8
+- bagKey  @8@0:4
+- requiredKeys  @8@0:4
+- hasRequiredKeys:  c12@0:4^@8
+- additionalMessageHeaders  @8@0:4
+- handleResponseDictionary:  v12@0:4@8
+- setResponseSignature:  v12@0:4@8
+- responseSignature  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- protocolVersion  @8@0:4
+@end
+
+### /System/Library/PrivateFrameworks/IMDaemonCore.framework/IMDaemonCore (15 classes)
+
+@interface IMDAccount : NSObject
+  ivar _accountDefaults  @"NSMutableDictionary"
+  ivar _account  @"NSString"
+  ivar _service  @"IMDService"
+  ivar _session  @"IMDServiceSession"
+  ivar _myStatus  @"NSMutableDictionary"
+  ivar _lastPostedStatus  @"NSDictionary"
+  ivar _isLoading  c
+  ivar _isManaged  c
+- session  @8@0:4
+- isActive  c8@0:4
+- isLoading  c8@0:4
+- status  @8@0:4
+- isDisabled  c8@0:4
+- setIsLoading:  v12@0:4c8
+- service  @8@0:4
+- systemDidBecomeIdle  v8@0:4
+- systemDidBecomeUnidle  v8@0:4
+- isManaged  c8@0:4
+- registrationStatus  i8@0:4
+- writeAccountDefaults:  v12@0:4@8
+- loginID  @8@0:4
+- accountDefaults  @8@0:4
+- setRegistrationStatus:error:alertInfo:  v20@0:4i8i12@16
+- postAccountCapabilitiesToListener:  v12@0:4@8
+- statusToPost  @8@0:4
+- wasDisabledAutomatically  c8@0:4
+- setWasDisabledAutomatically:  v12@0:4c8
+- shouldPublishNowPlaying  c8@0:4
+- changeStatus:  v12@0:4@8
+- _updateIdle  v8@0:4
+- _registrationInfo  @8@0:4
+- initWithAccountID:defaults:service:  @20@0:4@8@12@16
+- setIsManaged:  v12@0:4c8
+- postAccountCapabilities  v8@0:4
+- accountInfoToPost  @8@0:4
+- createSessionIfNecessary  v8@0:4
+- releaseSession  v8@0:4
+- statusToSave  @8@0:4
+- tunesController:playerInfoChanged:  v16@0:4@8@12
+- registrationAlertInfo  @8@0:4
+- accountID  @8@0:4
+- dealloc  v8@0:4
+- registrationError  i8@0:4
+@end
+
+@interface IMDAccountController : NSObject
+  ivar _accounts  @"NSMutableDictionary"
+  ivar _activeAccounts  @"NSMutableDictionary"
+  ivar _isLoading  c
+  ivar _isFirstLoad  c
++ sharedAccountController  @8@0:4
++ sharedInstance  @8@0:4
+- isLoading  c8@0:4
+- load  v8@0:4
+- accountsForService:  @12@0:4@8
+- activeAccountsForService:  @12@0:4@8
+- connectedAccountsForService:  @12@0:4@8
+- connectedAccounts  @8@0:4
+- activateAccounts:  v12@0:4@8
+- deactivateAccounts:  v12@0:4@8
+- activateAccount:  v12@0:4@8
+- deactivateAccount:  v12@0:4@8
+- removeAccount:  v12@0:4@8
+- isAccountActive:  c12@0:4@8
+- _daemonWillShutdown:  v12@0:4@8
+- accountForAccountID:  @12@0:4@8
+- loadOldStatusStore  @8@0:4
+- _checkPowerAssertion  v8@0:4
+- deactivateAccounts:force:  v16@0:4@8c12
+- _isAccountActive:forService:  c16@0:4@8@12
+- deactivateAccount:force:  v16@0:4@8c12
+- deferredSave  v8@0:4
+- accountsForLoginID:onService:  @16@0:4@8@12
+- connectingAccounts  @8@0:4
+- connectingAccountsForService:  @12@0:4@8
+- activeSessions  @8@0:4
+- sessionForAccount:  @12@0:4@8
+- anySessionForServiceName:  @12@0:4@8
+- _superFormatFromAIML:  @12@0:4@8
+- accounts  @8@0:4
+- activeAccounts  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- save  v8@0:4
+- addAccount:  v12@0:4@8
+@end
+
+@interface IMDService : NSObject
+  ivar _bundle  @"NSBundle"
+  ivar _sessionClass  #
+  ivar _accountDefaults  @"NSDictionary"
+  ivar _serviceDefaults  @"NSDictionary"
+  ivar _serviceProperties  @"NSDictionary"
+  ivar _cachedServiceDefaults  @"NSDictionary"
+  ivar _cachedSetupServiceDefaults  @"NSDictionary"
+  ivar _blockPrefWriting  c
+- bundle  @8@0:4
+- initWithBundle:  @12@0:4@8
+- systemDidEnterMemoryPressure  v8@0:4
+- systemDidStartBackup  v8@0:4
+- serviceProperties  @8@0:4
+- serviceDefaults  @8@0:4
+- defaultAccountSettings  @8@0:4
+- internalName  @8@0:4
+- delayedSaveSettings  v8@0:4
+- sessionClass  #8@0:4
+- shouldForceAccountsConnected  c8@0:4
+- serviceRequiresSingleAccount  c8@0:4
+- shouldCreateActiveAccounts  c8@0:4
+- disallowDeactivation  c8@0:4
+- shouldForceAccountsActive  c8@0:4
+- saveSettings  v8@0:4
+- _copyServicePropertiesFromIMServiceBundle:  @12@0:4@8
+- synchronizeServiceDefaults  v8@0:4
+- unloadServiceBundle  v8@0:4
+- _reallyUnloadServiceBundle  v8@0:4
+- serviceProtocolVersion  i8@0:4
+- _serviceDomain  @8@0:4
+- oldInternalName  @8@0:4
+- loadServiceBundle  v8@0:4
+- _defaultDefaults  @8@0:4
+- serviceDomain  @8@0:4
+- _serviceDefaultsForDomain:  @12@0:4@8
+- _oldServiceDomain  @8@0:4
+- purgeMemoryCaches  v8@0:4
+- serviceDefaultsForSetup  @8@0:4
+- clearOneTimeImportAccounts  c8@0:4
+- supportsDatabase  c8@0:4
+- serviceSupportsRegistration  c8@0:4
+- serviceIgnoresNetworkConnectivity  c8@0:4
+- serviceWantsNullHostReachability  c8@0:4
+- serviceNeedsLogin  c8@0:4
+- serviceNeedsPassword  c8@0:4
+- serviceShouldBeAlwaysLoggedIn  c8@0:4
+- serviceRequiresHost  c8@0:4
+- serviceChatsIgnoreLoginStatus  c8@0:4
+- serviceSupportsPresence  c8@0:4
+- dealloc  v8@0:4
+- description  @8@0:4
+@end
+
+@interface IMDServiceSession : NSObject
+  ivar _lock  @"NSRecursiveLock"
+  ivar _account  @"IMDAccount"
+  ivar _loginStatusMessage  @"NSString"
+  ivar _localProperties  @"NSMutableDictionary"
+  ivar _changedBuddies  @"NSMutableSet"
+  ivar _registeredChats  @"NSMutableSet"
+  ivar _groupChatIdentifierToChatRoomMap  @"NSMutableDictionary"
+  ivar _chatRoomToGroupChatIdentifierMap  @"NSMutableDictionary"
+  ivar _chatSuppressionFlagMap  @"NSMutableDictionary"
+  ivar _chatSuppressionTimerMap  @"NSMutableDictionary"
+  ivar _suppressedMessages  @"NSMutableDictionary"
+  ivar _messageRoutingTimer  @"IMTimer"
+  ivar _storageTimer  @"NSTimer"
+  ivar _messagesReceivedDuringStorage  @"NSMutableSet"
+  ivar _connectionMonitor  @"IMConnectionMonitor"
+  ivar _reconnectTimer  @"NSTimer"
+  ivar _loginID  @"NSString"
+  ivar _pwRequestID  @"NSString"
+  ivar _systemProxySettingsFetcher  @"IMSystemProxySettingsFetcher"
+  ivar _buddyChangeLevel  i
+  ivar _loginStatus  I
+  ivar _disconnectReason  i
+  ivar _activated  c
+  ivar _saveKeychainPassword  c
+  ivar _awaitingDataContext  c
+  ivar _shouldReconnect  c
+  ivar _badPass  c
+  ivar _service  @"IMDService"
+  ivar _buddies  @"NSMutableDictionary"
+  ivar _proxyHost  @"NSString"
+  ivar _proxyAccount  @"NSString"
+  ivar _proxyPassword  @"NSString"
+  ivar _password  @"NSString"
+  ivar _serverHost  @"NSString"
+  ivar _proxyType  i
+  ivar _proxyPort  S
+  ivar _useSSL  c
+  ivar _serverPort  S
++ initialize  v8@0:4
++ _firewallUserNotificationForService:  @12@0:4@8
+- groups  @8@0:4
+- serverPort  S8@0:4
+- server  @8@0:4
+- isActive  c8@0:4
+- displayName  @8@0:4
+- password  @8@0:4
+- proxyType  i8@0:4
+- didReceiveMessage:forChat:style:  v20@0:4@8@12C16
+- didReceiveMessageDeliveryReceiptForMessageID:date:  v16@0:4@8@12
+- didSendMessageReadReceiptForMessageID:  v12@0:4@8
+- beginBuddyChanges  v8@0:4
+- changeProperty:ofBuddy:to:  v20@0:4@8@12@16
+- markBuddiesAsChanged:  v12@0:4@8
+- endBuddyChanges  v8@0:4
+- broadcaster  @8@0:4
+- noteLastItemFromStorage:  v12@0:4@8
+- noteItemFromStorage:  v12@0:4@8
+- didReceiveError:forMessageID:forceError:  v20@0:4I8@12c16
+- _clearDowngradeMarkersForChat:  v12@0:4@8
+- didReceiveMessageReadForMessageID:date:completionBlock:  v20@0:4@8@12@?16
+- didReceiveMessageReadReceiptForMessageID:date:completionBlock:  v20@0:4@8@12@?16
+- canonicalizeChatIdentifier:style:  v16@0:4^@8*12
+- didJoinChat:style:handleInfo:  v20@0:4@8C12@16
+- didChangeMemberStatus:forHandle:unformattedNumber:countryCode:forChat:style:  v32@0:4i8@12@16@20@24C28
+- didLeaveChat:style:  v16@0:4@8C12
+- chatForChatIdentifier:style:  @16@0:4@8C12
+- didSendMessage:forChat:style:  v20@0:4@8@12C16
+- sendMessage:toChat:style:  v20@0:4@8@12C16
+- notifyDidSendMessageID:  v12@0:4@8
+- processMessageForSending:toChat:style:completionBlock:  v24@0:4@8@12C16@?20
+- networkConditionsAllowLogin  c8@0:4
+- invitePersonInfo:withMessage:toChat:style:  v24@0:4@8@12@16C20
+- joinChat:handleInfo:style:joinProperties:  v24@0:4@8@12C16@20
+- leaveChat:style:  v16@0:4@8C12
+- sendReadReceiptForMessage:toChatID:identifier:style:  v24@0:4@8@12@16C20
+- sendCommand:withProperties:toPerson:  v20@0:4@8@12@16
+- sendData:toPerson:  v16@0:4@8@12
+- requestProperty:ofPerson:  v16@0:4@8@12
+- useSSL  c8@0:4
+- service  @8@0:4
+- systemDidUnlock  v8@0:4
+- login  v8@0:4
+- logout  v8@0:4
+- canonicalFormOfID:  @12@0:4@8
+- equalID:andID:  c16@0:4@8@12
+- blockIdleStatus  c8@0:4
+- setBlockIdleStatus:  v12@0:4c8
+- blockingMode  I8@0:4
+- blockList  @8@0:4
+- allowList  @8@0:4
+- setBlockList:  v12@0:4@8
+- setBlockingMode:  v12@0:4I8
+- setAllowList:  v12@0:4@8
+- requestGroups  v8@0:4
+- defaultChatSuffix  @8@0:4
+- autoLogin  v8@0:4
+- renameGroup:to:  v16@0:4@8@12
+- holdBuddyUpdates  v8@0:4
+- resumeBuddyUpdates  v8@0:4
+- validityOfChatRoomName:  {_FZChatRoomValidity=iS}12@0:4@8
+- _managedPrefsNotification:  v12@0:4@8
+- registrationStatus  i8@0:4
+- userNotificationDidFinish:  v12@0:4@8
+- addAliases:  v12@0:4@8
+- loginID  @8@0:4
+- accountDefaults  @8@0:4
+- initWithAccount:service:  @16@0:4@8@12
+- registerAccount  v8@0:4
+- removeAliases:  v12@0:4@8
+- setRegistrationStatus:error:alertInfo:  v20@0:4i8i12@16
+- sessionDidBecomeActive  v8@0:4
+- sessionWillBecomeInactive  v8@0:4
+- unregisterAccount  v8@0:4
+- refreshServiceCapabilities  v8@0:4
+- serviceSessionDidLogin  v8@0:4
+- serviceLoginStatus  I8@0:4
+- setLoginStatus:message:  v16@0:4I8@12
+- serviceSessionDidLogout  v8@0:4
+- authenticateAccount  v8@0:4
+- validateAliases:  v12@0:4@8
+- loginServiceSession  v8@0:4
+- logoutServiceSession  v8@0:4
+- passwordUpdated  v8@0:4
+- updateAuthorizationCredentials:token:  v16@0:4@8@12
+- unvalidateAliases:  v12@0:4@8
+- refreshVettedAliases  v8@0:4
+- validateProfile  v8@0:4
+- canMakeDowngradeRoutingChecks  c8@0:4
+- accountDefaultsChanged:  v12@0:4@8
+- serviceLoginStatusMessage  @8@0:4
+- buddyProperties  @8@0:4
+- changeMyStatus:changedKeys:  v16@0:4@8@12
+- setIdleTime:  v12@0:4L8
+- registrationAlertInfo  @8@0:4
+- _setAutoReconnectTimer  v8@0:4
+- _newHashForChat:style:  @16@0:4@8C12
+- _networkChanged:  v12@0:4@8
+- _updateConnectionMonitorFromAccountDefaultsIgnoringProxy:  v12@0:4c8
+- _abandonSystemProxySettingsFetcher  v8@0:4
+- _abandonPWFetcher  v8@0:4
+- _clearAutoReconnectTimer  v8@0:4
+- _clearConnectionMonitor  v8@0:4
+- _updateRoutingTimerWithInterval:  v16@0:4d8
+- _processConnectionMonitorUpdate  v8@0:4
+- leaveAllChats  v8@0:4
+- _updateConnectionMonitorWithRemoteHost:  v12@0:4@8
+- accountShouldBeAlwaysLoggedIn  c8@0:4
+- _doLoginIgnoringProxy:  v12@0:4c8
+- _reconnectIfNecessary  v8@0:4
+- _setPendingConnectionMonitorUpdate  v8@0:4
+- autoReconnect  v8@0:4
+- allowedAsChild  c8@0:4
+- broadcasterForListenersWithCapabilities:  @12@0:4I8
+- endMessageSuppression  v8@0:4
+- broadcasterForChatListeners  @8@0:4
+- changeGroups:  v12@0:4@8
+- changeGroup:changes:  v16@0:4@8@12
+- acceptSubscriptionRequest:from:  v16@0:4c8@12
+- requestSubscriptionTo:  v12@0:4@8
+- startWatchingBuddy:  v12@0:4@8
+- stopWatchingBuddy:  v12@0:4@8
+- setValue:ofProperty:ofPerson:  v20@0:4@8@12@16
+- joinChatID:handleInfo:identifier:style:joinProperties:  v28@0:4@8@12@16C20@24
+- leaveChatID:identifier:style:  v20@0:4@8@12C16
+- invitePersonInfo:withMessage:toChatID:identifier:style:  v28@0:4@8@12@16@20C24
+- declineInvitationToChatID:identifier:style:  v20@0:4@8@12C16
+- sendMessage:toChatID:identifier:style:  v24@0:4@8@12@16C20
+- noteMessagesMarkedAsReadForChatWithGUID:  v12@0:4@8
+- setProperties:ofParticipant:inChatID:identifier:style:  v28@0:4@8@12@16@20C24
+- sendFileTransfer:toPerson:  v16@0:4@8@12
+- requestVCWithPerson:properties:conference:  v20@0:4@8@12@16
+- respondToVCInvitationWithPerson:properties:conference:  v20@0:4@8@12@16
+- cancelVCRequestWithPerson:properties:conference:  v20@0:4@8@12@16
+- sendCounterProposalToPerson:properties:conference:  v20@0:4@8@12@16
+- sendVCUpdate:toPerson:conference:  v20@0:4@8@12@16
+- sendAVMessageToPerson:sessionID:type:userInfo:conference:  v28@0:4@8I12I16@20@24
+- relay:sendInitateRequest:toPerson:  v20@0:4@8@12@16
+- relay:sendUpdate:toPerson:  v20@0:4@8@12@16
+- relay:sendCancel:toPerson:  v20@0:4@8@12@16
+- accountNeedsLogin  c8@0:4
+- accountNeedsPassword  c8@0:4
+- updateConnectionMonitorWithLocalSocketAddress:remoteSocketAddress:  v16@0:4@8@12
+- canonicalFormOfChatRoom:  @12@0:4@8
+- broadcasterForAVConferenceListeners  @8@0:4
+- broadcasterForVCConferenceListeners  @8@0:4
+- serverHost  @8@0:4
+- proxyHost  @8@0:4
+- proxyAccount  @8@0:4
+- serviceDisconnectReason  i8@0:4
+- registerChat:style:handleInfo:  v20@0:4@8C12@16
+- shouldImitateGroupChatUsingChatRooms  c8@0:4
+- chatRoomForGroupChatIdentifier:  @12@0:4@8
+- groupChatIdentifierForChatRoom:  @12@0:4@8
+- _mapRoomChatToGroupChat:style:  v16@0:4^@8*12
+- didUpdateChatStatus:chat:style:handleInfo:  v24@0:4i8@12C16@20
+- isAwaitingStorageTimer  c8@0:4
+- noteSuppressedMessageUpdate:  v12@0:4@8
+- _didReceiveMessageReadForMessageID:date:attempts:completionBlock:  v24@0:4@8@12i16@?20
+- _didReceiveMessageReadReceiptForMessageID:date:attempts:completionBlock:  v24@0:4@8@12i16@?20
+- _updateRoutingForMessageGUID:chatGUID:error:  v20@0:4@8@12I16
+- _endMessageSuppressionForChatGUID:  v12@0:4@8
+- _suppresionTimerFired:  v12@0:4@8
+- _setSuppressedMessage:inChatWithGUID:  v16@0:4@8@12
+- useChatRoom:forGroupChatIdentifier:  v16@0:4@8@12
+- unregisterChat:style:  v16@0:4@8C12
+- _markChatAsDowngraded:  v12@0:4@8
+- _handleRoutingWithDictionary:  v12@0:4@8
+- _routingTimerFired  v8@0:4
+- _storageTimerFired  v8@0:4
+- _updateStorageTimerWithInterval:  v16@0:4d8
+- registerChat:style:  v16@0:4@8C12
+- isChatRegistered:style:  c16@0:4@8C12
+- didJoinChat:style:  v16@0:4@8C12
+- didReceiveReplaceMessageID:forChat:style:  v20@0:4i8@12C16
+- didReceiveErrorMessage:forChat:style:  v20@0:4@8@12C16
+- didReceiveInvitation:forChat:style:  v20@0:4@8@12C16
+- didUpdateChatStatus:chat:style:  v20@0:4i8@12C16
+- didChangeMemberStatus:forHandle:forChat:style:  v24@0:4i8@12@16C20
+- localPropertiesOfBuddy:  @12@0:4@8
+- buddyPictures  @8@0:4
+- pictureOfBuddy:  @12@0:4@8
+- pictureKeyForBuddy:  @12@0:4@8
+- allBuddies  @8@0:4
+- clearPropertiesOfBuddy:  v12@0:4@8
+- property:ofBuddy:  @16@0:4@8@12
+- localProperty:ofBuddy:  @16@0:4@8@12
+- clearLocalProperties  v8@0:4
+- changeLocalProperty:ofBuddy:to:  v20@0:4@8@12@16
+- disallowReconnection  v8@0:4
+- joinChat:style:joinProperties:  v20@0:4@8C12@16
+- invitePerson:withMessage:toChat:style:  v24@0:4@8@12@16C20
+- declineInvitationToChat:style:  v16@0:4@8C12
+- setProperties:ofParticipant:inChat:style:  v24@0:4@8@12@16C20
+- noteBadPassword  v8@0:4
+- _handleFirewallUserNotificationDidFinish:  v12@0:4@8
+- warnIfPortBlocked:forAction:  c16@0:4i8@12
+- _login_serverSettingsReady  v8@0:4
+- _forceSetLoginStatus:message:reason:properties:  v24@0:4I8@12i16@20
+- _data_connection_ready  v8@0:4
+- _login_usernameAndPasswordReady  v8@0:4
+- _login_checkUsernameAndPassword  v8@0:4
+- setLoginStatus:message:reason:properties:  v24@0:4I8@12i16@20
+- _wentOffline  v8@0:4
+- serviceSessionDidLogoutWithMessage:reason:properties:  v20@0:4@8i12@16
+- _autoReconnectTimer:  v12@0:4@8
+- systemProxySettingsFetcher:retrievedHost:port:protocol:  v24@0:4@8@12S16i20
+- systemProxySettingsFetcher:retrievedAccount:password:  v20@0:4@8@12@16
+- connectionMonitorDidUpdate:  v12@0:4@8
+- proxyPort  S8@0:4
+- proxyPassword  @8@0:4
+- account  @8@0:4
+- accountID  @8@0:4
+- capabilities  Q8@0:4
+- dealloc  v8@0:4
+- hasCapability:  c16@0:4Q8
+- registrationError  i8@0:4
+@end
+
+@interface IMDFileTransferCenter : NSObject
+  ivar _guidToCopierMap  @"NSMutableDictionary"
+  ivar _guidToSimpleCopierMap  @"NSMutableDictionary"
+  ivar _guidToTransferMap  @"NSMutableDictionary"
+  ivar _activeTransfers  @"NSMutableSet"
+  ivar _contextStamp  @"NSString"
+  ivar _transferTimer  @"NSTimer"
+  ivar _transferringTransfers  @"NSMutableArray"
++ sharedInstance  @8@0:4
+- guidForNewIncomingTransferWithFilename:isDirectory:totalBytes:hfsType:hfsCreator:hfsFlags:  @36@0:4@8c12Q16L24L28S32
+- startTransfer:  v12@0:4@8
+- assignTransfer:toAccount:otherPerson:  v20@0:4@8@12@16
+- failTransfer:reason:  v16@0:4@8i12
+- failTransfer:error:  v16@0:4@8@12
+- updateTransfer:currentBytes:totalBytes:  v28@0:4@8Q12Q20
+- endTransfer:  v12@0:4@8
+- acceptTransfer:path:  v16@0:4@8@12
+- startFinalizingTransfer:  v12@0:4@8
+- transferForGUID:  @12@0:4@8
+- _handleFileTransfer:createdWithProperties:  v16@0:4@8@12
+- _handleFileTransfer:updatedWithProperties:  v16@0:4@8@12
+- _removeActiveTransfer:  v12@0:4@8
+- _addActiveTransfer:  v12@0:4@8
+- hasActiveFileTransfers  c8@0:4
+- _loadTransfersFromDefaults  v8@0:4
+- setContextStamp:  v12@0:4@8
+- _saveTransfersToDefaults  v8@0:4
+- _updateContextStamp  v8@0:4
+- _postUpdated:  v12@0:4@8
+- _archiveFileTransfer:  v12@0:4@8
+- _addGatekeeperProperties:toFileAtPath:  l16@0:4@8@12
+- _transferTimerTick:  v12@0:4@8
+- makeNewIncomingTransferWithGUID:filename:isDirectory:totalBytes:hfsType:hfsCreator:hfsFlags:  v40@0:4@8@12c16Q20L28L32S36
+- removeTransferForGUID:  v12@0:4@8
+- _createWrapperForTransfer:  @12@0:4@8
+- _addTransferringTransfer:  v12@0:4@8
+- _removeWrapperForTransfer:  @12@0:4@8
+- _removeTransferringTransfer:  v12@0:4@8
+- _handleFileTransfer:acceptedWithPath:autoRename:overwrite:  v24@0:4@8@12c16c20
+- _dictionaryRepresentationsForFileTransfers:toSave:  @16@0:4@8c12
+- _handleFileTransferStopped:  v12@0:4@8
+- _temporaryPathForGUID:filename:  @16@0:4@8@12
+- archiveFileTransfer:  v12@0:4@8
+- _addGatekeeperProperties:toDirectory:  v16@0:4@8@12
+- _addDefaultGatekeeperPropertiesToDirectory:  v12@0:4@8
+- _addSpotlightPropertiesFromFileTransfer:toDirectory:  v16@0:4@8@12
+- makeNewOutgoingTransferWithGUID:filename:isDirectory:totalBytes:hfsType:hfsCreator:hfsFlags:  v40@0:4@8@12c16Q20L28L32S36
+- guidForNewOutgoingTransferWithFilename:isDirectory:totalBytes:hfsType:hfsCreator:hfsFlags:  @36@0:4@8c12Q16L24L28S32
+- removeUnassignedTransfers  v8@0:4
+- addTransfer:forGUID:  v16@0:4@8@12
+- registerStandaloneTransfer:  v12@0:4@8
+- updateTransfer:  v12@0:4@8
+- _allFileTransfers  @8@0:4
+- _handleSendFileTransfer:  v12@0:4@8
+- _handleFileTransferRemoved:  v12@0:4@8
+- contextStamp  @8@0:4
+- fileCopierDidStart:  v12@0:4@8
+- fileCopierDidFinish:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMTunesController : NSObject
+  ivar _lastChange  @"NSDate"
+  ivar _lastInfo  @"NSDictionary"
+  ivar _playerInfo  @"NSMutableDictionary"
+  ivar _listeners  @"NSMutableArray"
+  ivar _messageFormat  @"NSString"
++ sharedTunesController  @8@0:4
+- isEnabled  c8@0:4
+- addListener:  v12@0:4@8
+- removeListener:  v12@0:4@8
+- playerInfo  @8@0:4
+- messageFormat  @8@0:4
+- _updateMessage  v8@0:4
+- _playerChanged:  v12@0:4@8
+- _playerChangedNotification:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDServiceController : NSObject
+  ivar _services  @"NSMutableDictionary"
++ sharedInstance  @8@0:4
+- allServices  @8@0:4
+- serviceWithName:  @12@0:4@8
+- registerSessionClassWithBundle:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDMessageStore : NSObject
+  ivar _modificationStamp  @"NSString"
+  ivar _cachedUnreadMessageCount  @"NSNumber"
+  ivar _databaseOpen  c
+  ivar _pendingDatabaseClose  c
+  ivar _suppressedUpdates  c
+  ivar _pendingDBUpdatePost  c
++ _updateCacheForMessageGUID:fromMessage:toMessage:  v20@0:4@8@12@16
++ sharedInstance  @8@0:4
+- performBlock:  v12@0:4@?8
+- hasStoredMessageWithGUID:  c12@0:4@8
+- messageWithGUID:  @12@0:4@8
+- systemDidEnterMemoryPressure  v8@0:4
+- systemDidLeaveMemoryPressure  v8@0:4
+- performBlock:afterDelay:  v20@0:4@?8d12
+- performBlock:waitUntilDone:  v16@0:4@?8c12
+- isCurrentThreadDBThread  c8@0:4
+- setModificationStamp:  v12@0:4@8
+- _performInitialHousekeeping  v8@0:4
+- __closeDatabase  v8@0:4
+- _clearDatabaseCloseTimer  v8@0:4
+- _setDatabaseCloseTimer  v8@0:4
+- _messagesWithGUIDs:  @12@0:4@8
+- _storeAttachmentsForMessage:  v12@0:4@8
+- updateStamp  v8@0:4
+- registerTransfersWithGUIDs:forMessageGUID:  v16@0:4@8@12
+- _hasMessagesWithGUIDs:  c12@0:4@8
+- messagesWithGUIDs:  @12@0:4@8
+- _messagesWithHandles:onServices:limit:  @20@0:4@8@12I16
+- _messagesWithRoomNames:onServices:limit:  @20@0:4@8@12I16
+- chatForMessageGUID:  @12@0:4@8
+- chatsForMessageGUID:  @12@0:4@8
+- deleteMessageGUIDs:  @12@0:4@8
+- _deleteMessagesWithGUIDs:chatIdentifiers:style:onServices:batchNumber:completion:  v32@0:4@8@12C16@20I24@?28
+- deleteMessagesWithChatIdentifiers:style:onServices:completion:  @24@0:4@8C12@16@?20
+- messageWithReplaceMessageID:fromHandle:onService:  @20@0:4i8@12@16
+- __postDBUpdate  v8@0:4
+- modificationStamp  @8@0:4
+- _updateModificationDate  v8@0:4
+- _postDBUpdate  v8@0:4
+- storeMessage:forceReplace:modifyError:modifyFlags:flagMask:  @32@0:4@8c12c16c20Q24
+- canStoreMessage:onService:  c16@0:4@8@12
+- existingMessageSimilarToMessage:skipServices:skipGUIDs:withinTimeInterval:participants:  @32@0:4@8@12@16d20@28
+- markMessageAsDeduplicated:  v12@0:4@8
+- messagesWithHandles:onServices:limit:  @20@0:4@8@12I16
+- messagesWithRoomNames:onServices:limit:  @20@0:4@8@12I16
+- chatForMessage:  @12@0:4@8
+- chatsForMessage:  @12@0:4@8
+- resolveUnformattedRepresentationsForHandles:onService:message:completionBlock:  v24@0:4@8@12@16@?20
+- deleteMessageGUIDs:inChat:  @16@0:4@8@12
+- deleteMessagesWithChatIdentifiers:style:onServices:  @20@0:4@8C12@16
+- deleteMessagesWithReplaceMessageID:fromHandle:onService:  @20@0:4i8@12@16
+- markMessagesAsReadWithHandles:onServices:upToGUID:fromMe:  @24@0:4@8@12@16c20
+- markMessagesAsReadWithRoomNames:onServices:upToGUID:fromMe:  @24@0:4@8@12@16c20
+- markMessagesAsReadWithHandle:onService:upToGUID:fromMe:  @24@0:4@8@12@16c20
+- markMessagesAsReadWithRoomname:onService:upToGUID:fromMe:  @24@0:4@8@12@16c20
+- unreadMessagesCount  q8@0:4
+- unreadMessageCountWithHandle:onService:  q16@0:4@8@12
+- unreadMessageCountWithRoomName:onService:  q16@0:4@8@12
+- cleanseAttachments  v8@0:4
+- setSuppressDatabaseUpdates:  v12@0:4c8
+- init  @8@0:4
+- dealloc  v8@0:4
+- openDatabase  v8@0:4
+- closeDatabase  v8@0:4
+@end
+
+@interface IMDChat : NSObject
+  ivar _lock  @"NSRecursiveLock"
+  ivar _accountID  @"NSString"
+  ivar _serviceName  @"NSString"
+  ivar _properties  @"NSDictionary"
+  ivar _chatIdentifier  @"NSString"
+  ivar _guid  @"NSString"
+  ivar _roomName  @"NSString"
+  ivar _lastAddressedLocalHandle  @"NSString"
+  ivar _participants  @"NSArray"
+  ivar _lastMessage  @"FZMessage"
+  ivar _state  i
+  ivar _style  C
+  ivar _unreadCount  I
+  ivar _failedCount  I
+  ivar _isArchived  i
+  ivar _rowIDOfMostRecentFailedMessage  i
+- copyDictionaryRepresentation  @8@0:4
+- serviceName  @8@0:4
+- participants  @8@0:4
+- setParticipants:  v12@0:4@8
+- setState:  v12@0:4i8
+- setStyle:  v12@0:4C8
+- style  C8@0:4
+- dictionaryRepresentation  @8@0:4
+- properties  @8@0:4
+- lastAddressedLocalHandle  @8@0:4
+- setLastAddressedLocalHandle:  v12@0:4@8
+- lastMessage  @8@0:4
+- service  @8@0:4
+- chatIdentifier  @8@0:4
+- roomName  @8@0:4
+- _setRowIDOfMostRecentFailedMessage:  v12@0:4i8
+- rowIDOfMostRecentFailedMessage  i8@0:4
+- setRoomName:  v12@0:4@8
+- setChatIdentifier:  v12@0:4@8
+- addParticipants:  v12@0:4@8
+- removeParticipants:  v12@0:4@8
+- failedCount  I8@0:4
+- setLastMessage:  v12@0:4@8
+- initWithAccountID:service:guid:chatIdentifier:participants:roomName:lastAddressedLocalHandle:state:style:  @44@0:4@8@12@16@20@24@28@32i36C40
+- addParticipant:  v12@0:4@8
+- removeParticipant:  v12@0:4@8
+- serviceSession  @8@0:4
+- chatProperties  @8@0:4
+- _updateLastMessage:  v12@0:4@8
+- updateProperties:  v12@0:4@8
+- _setUnreadCount:  v12@0:4I8
+- isArchived  i8@0:4
+- _setFailedCount:  v12@0:4I8
+- setAccountID:  v12@0:4@8
+- account  @8@0:4
+- unreadCount  I8@0:4
+- setServiceName:  v12@0:4@8
+- accountID  @8@0:4
+- dealloc  v8@0:4
+- description  @8@0:4
+- setProperties:  v12@0:4@8
+- state  i8@0:4
+- guid  @8@0:4
+- setGuid:  v12@0:4@8
+@end
+
+@interface IMDChatRegistry : NSObject
+  ivar _chatsLock  @"NSRecursiveLock"
+  ivar _chats  @"NSMutableDictionary"
+  ivar _isLoading  c
++ sharedInstance  @8@0:4
+- existingChatForIDs:account:style:  @20@0:4@8@12C16
+- existingChatForID:account:  @16@0:4@8@12
+- existingChatWithGUID:  @12@0:4@8
+- chats  @8@0:4
+- updateProperties:chat:style:  c20@0:4@8@12C16
+- updateStateForChat:fromMessage:toMessage:  v20@0:4@8@12@16
+- existingChatsForIDs:onService:style:  @20@0:4@8@12C16
+- removeMessage:fromChat:  v16@0:4@8@12
+- updateStateForChat:  v12@0:4@8
+- addChat:  v12@0:4@8
+- existingChatWithIdentifier:account:  @16@0:4@8@12
+- existingChatForRoom:account:  @16@0:4@8@12
+- updateLastMessageForChat:hintMessage:  v16@0:4@8@12
+- updateLastMessageForChat:  v12@0:4@8
+- updateUnreadCountForChat:  c12@0:4@8
+- updateFailedCountForChat:  c12@0:4@8
+- _saveChats  c8@0:4
+- allExistingChatsWithIdentifier:style:  @16@0:4@8C12
+- chatForHandle:account:chatIdentifier:guid:  @24@0:4@8@12@16@20
+- chatForHandles:account:chatIdentifier:style:guid:  @28@0:4@8@12@16C20@24
+- chatForRoom:account:chatIdentifier:guid:  @24@0:4@8@12@16@20
+- removeChat:  v12@0:4@8
+- addMessage:toChat:  v16@0:4@8@12
+- _chatInfo  @8@0:4
+- _chatInfoForSaving  @8@0:4
+- loadChatsWithCompletionBlock:  c12@0:4@?8
+- saveChats  c8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDAttachmentStore : NSObject
++ sharedInstance  @8@0:4
+- updateAttachment:  c12@0:4@8
+- storeAttachment:associateWithMessageWithGUID:  c16@0:4@8@12
+- attachmentWithGUID:  @12@0:4@8
+- removeAttachment:fromMessageWithGUID:  c16@0:4@8@12
+- deleteAttachmentsWithGUIDs:  c12@0:4@8
+- deleteAttachmentDataForTransfer:  c12@0:4@8
+- deleteAttachmentWithGUID:  c12@0:4@8
+@end
+
+@interface IMDChatStore : NSObject
+  ivar _lastModificationStamp  @"NSString"
++ sharedInstance  @8@0:4
+- storeChat:  @12@0:4@8
+- setModificationStamp:  v12@0:4@8
+- chatsGUIDsForMessageWithGUID:  @12@0:4@8
+- modificationStamp  @8@0:4
+- _updateModificationDate  v8@0:4
+- unreadCountForChat:  I12@0:4@8
+- failedCountForChat:  I12@0:4@8
+- rowIDOfMostRecentFailedMessageInChat:  i12@0:4@8
+- deleteChat:  v12@0:4@8
+- addMessageWithGUID:toChat:  v16@0:4@8@12
+- removeMessageWithGUID:fromChat:  v16@0:4@8@12
+- loadAllChats  @8@0:4
+- _chatWithGUID:  @12@0:4@8
+- archiveChat:  v12@0:4@8
+- unarchiveChat:  v12@0:4@8
+- updateChat:  @12@0:4@8
+- chatWithGUID:  @12@0:4@8
+- chatsWithHandle:onService:  @16@0:4@8@12
+- chatsWithRoomname:onService:  @16@0:4@8@12
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDInvocationForwarder : NSObject
+  ivar _targets  @"NSMutableArray"
+  ivar _lock  @"NSLock"
+- methodSignatureForSelector:  @12@0:4:8
+- forwardInvocation:  v12@0:4@8
+- removeTarget:  v12@0:4@8
+- _lock  @8@0:4
+- initWithTargets:  @12@0:4@8
+- addTarget:  v12@0:4@8
+- _targets  @8@0:4
+- set_targets:  v12@0:4@8
+- set_lock:  v12@0:4@8
+- dealloc  v8@0:4
+- respondsToSelector:  c12@0:4:8
+@end
+
+@interface IMDCallMonitor : NSObject
+  ivar _callCenter  @
+  ivar _wasOnCall  c
+  ivar _lastCallDate  @"NSDate"
++ sharedInstance  @8@0:4
+- dateLastCallEnded  @8@0:4
+- isOnCall  c8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDHandle : NSObject
+  ivar _id  @"NSString"
+  ivar _unformattedID  @"NSString"
+  ivar _countryCode  @"NSString"
+- compareIDs:  i12@0:4@8
+- ID  @8@0:4
+- setID:  v12@0:4@8
+- isBetterDefinedThan:  c12@0:4@8
+- handleInfo  @8@0:4
+- initWithID:unformattedID:countryCode:  @20@0:4@8@12@16
+- unformattedID  @8@0:4
+- setUnformattedID:  v12@0:4@8
+- countryCode  @8@0:4
+- setCountryCode:  v12@0:4@8
+- dealloc  v8@0:4
+- isEqual:  c12@0:4@8
+- hash  I8@0:4
+- description  @8@0:4
+@end
+
+### /System/Library/PrivateFrameworks/Marco.framework/Marco (0 classes)
+
+### /System/Library/PrivateFrameworks/IMDAppleServices.framework/IMDAppleServices (12 classes)
+
+@interface IMDAppleIDRegistrationCenter : NSObject
+  ivar _queues  @"NSMutableDictionary"
+  ivar _handlers  @"NSMutableArray"
+  ivar _messageDelivery  @"FTMessageDelivery"
++ sharedInstance  @8@0:4
+- addListener:  v12@0:4@8
+- removeListener:  v12@0:4@8
+- _queueForKey:  @12@0:4@8
+- _postUserNotificationWithTitle:message:identifier:completionHandler:  v24@0:4@8@12@16@?20
+- _notifyAuthenticationSuccess:  v12@0:4@8
+- _serviceQueueForKey:  v12@0:4@8
+- _handleServerResponse:registration:  v16@0:4i8@12
+- _notifyAuthenticationFailure:error:info:  v20@0:4@8i12@16
+- _notifyEmailValidationRequestSuccess:emailAddress:  v16@0:4@8@12
+- _renewTokenForRegistrationInfo:  v12@0:4@8
+- _fetchPasswordForRegistrationInfo:  v12@0:4@8
+- validateEmail:forRegistration:  c16@0:4@8@12
+- _notifyEmailValidationRequestFailure:emailAddress:error:info:  v24@0:4@8@12i16@20
+- _notifyEmailConfirmationSuccess:emailAddress:  v16@0:4@8@12
+- _notifyHandleUnlinkSuccess:handle:  v16@0:4@8@12
+- _notifyHandleUnlinkFailure:handle:error:info:  v24@0:4@8@12i16@20
+- linkHandle:vettingToken:forRegistration:  c20@0:4@8@12@16
+- _notifyEmailConfirmationFailure:emailAddress:error:info:  v24@0:4@8@12i16@20
+- _notifyEmailQuerySuccess:emailInfo:  v16@0:4@8@12
+- _notifyEmailQueryFailure:error:info:  v20@0:4@8i12@16
+- _notifyRegionValidationSuccess:regionID:phoneNumber:context:verified:  v28@0:4@8@12@16@20c24
+- _notifyInitialRegionQuerySuccess:  v12@0:4@8
+- _notifyRegionValidationFailure:error:info:  v20@0:4@8i12@16
+- __reallySendAuthentication:password:  c16@0:4@8@12
+- _displayStringForFTRegistrationServiceType:  @12@0:4i8
+- _noteSuccessfulToken:profileID:forRegistrationInfo:  v20@0:4@8@12@16
+- _processAuthenticationMessage:deliveredWithError:resultCode:resultDictionary:  v24@0:4@8@12i16@20
+- _fetchTokenForRegistrationInfo:failureBlock:  v16@0:4@8@?12
+- _processValidateHandleRequestMessage:deliveredWithError:resultCode:resultDictionary:  v24@0:4@8@12i16@20
+- _registrationNeedsAuthentication:  c12@0:4@8
+- _sendAuthenticationRequest:forceNew:  c16@0:4@8c12
+- _processRegionValidationMessage:deliveredWithError:resultCode:resultDictionary:  v24@0:4@8@12i16@20
+- _processDefaultInvitationContextMessage:deliveredWithError:resultCode:resultDictionary:  v24@0:4@8@12i16@20
+- _processGetDevicesMessage:deliveredWithError:resultCode:resultDictionary:  v24@0:4@8@12i16@20
+- _processGetHandlesMessage:deliveredWithError:resultCode:resultDictionary:  v24@0:4@8@12i16@20
+- _processUnlinkHandleMessage:deliveredWithError:resultCode:resultDictionary:  v24@0:4@8@12i16@20
+- _processLinkHandleMessage:deliveredWithError:resultCode:resultDictionary:  v24@0:4@8@12i16@20
+- _queryDevicesForRegistration:completionBlock:  c16@0:4@8@?12
+- _queryValidatedEmailsForRegistration:completionBlock:  c16@0:4@8@?12
+- _queryInitialInvitationContextForRegistration:  c12@0:4@8
+- _validateRegionID:phoneNumber:registration:  c20@0:4@8@12@16
+- _sendValidationForEmail:registration:  c16@0:4@8@12
+- _sendConfirmationForEmail:vettingToken:registration:  c20@0:4@8@12@16
+- _sendUnlinkForHandle:registration:  c16@0:4@8@12
+- _notifyRegistrationRequired:  v12@0:4@8
+- authenticateRegistration:  c12@0:4@8
+- authenticateRegistration:forceNewToken:  c16@0:4@8c12
+- center:foundEmail:vettingToken:forRegistrationInfo:  v24@0:4@8@12@16@20
+- _notifyAuthenticating:  v12@0:4@8
+- _haveQueuedMessageForRegistration:inQueue:  c16@0:4@8@12
+- isRegistering:  c12@0:4@8
+- queryDevicesForRegistration:completionBlock:  c16@0:4@8@?12
+- queryValidatedEmailsForRegistration:completionBlock:  c16@0:4@8@?12
+- queryInitialInvitationContextForRegistration:  c12@0:4@8
+- validateRegion:phoneNumber:forRegistration:  c20@0:4@8@12@16
+- unlinkHandle:forRegistration:  c16@0:4@8@12
+- removeEmail:forRegistration:  c16@0:4@8@12
+- cancelActionsForRegistrationInfo:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDAppleRegistration : NSObject
+  ivar _vettedEmails  @"NSArray"
+  ivar _profileID  @"NSString"
+  ivar _authenticationToken  @"NSString"
+  ivar _IDSVersion  @"NSNumber"
+  ivar _applicationVersion  @"NSNumber"
+  ivar _environment  @"NSString"
+  ivar _registrationDate  @"NSDate"
+  ivar _nextRegistrationDate  @"NSDate"
+  ivar _pushToken  @"NSData"
+  ivar _deviceID  @"NSString"
+  ivar _isC2K  @"NSNumber"
+  ivar _registrationStatus  i
+  ivar _registrationType  i
+  ivar _retries  i
+  ivar _absintheRetries  i
+  ivar _mainID  @"NSString"
+  ivar _dependantRegistrations  @"NSArray"
+  ivar _regionID  @"NSString"
+  ivar _deviceName  @"NSString"
+  ivar _regionBasePhoneNumber  @"NSString"
+  ivar _regionServerContext  @"NSDictionary"
+  ivar _cert  @"NSData"
+  ivar _bindings  @"NSArray"
+  ivar _needsProvisioning  c
+  ivar _userInfo  @"NSDictionary"
+  ivar _serviceType  i
+  ivar _guid  @"NSString"
+  ivar _candidateEmails  @"NSMutableArray"
+  ivar _migrationContext  @"NSDictionary"
+  ivar _identityVersion  @"NSNumber"
+  ivar _runningSimpleAuthentication  c
+  ivar _keyPairSignature  @"NSString"
+  ivar _linkedIdentity  @"NSString"
+- setPhoneNumber:  v12@0:4@8
+- pushToken  @8@0:4
+- setPushToken:  v12@0:4@8
+- setEmail:  v12@0:4@8
+- email  @8@0:4
+- setDeviceID:  v12@0:4@8
+- setEnvironment:  v12@0:4@8
+- environment  @8@0:4
+- initWithDictionary:  @12@0:4@8
+- phoneNumber  @8@0:4
+- dictionaryRepresentation  @8@0:4
+- setUserInfo:  v12@0:4@8
+- setApplicationVersion:  v12@0:4@8
+- deviceName  @8@0:4
+- deviceID  @8@0:4
+- setServiceType:  v12@0:4i8
+- serviceType  i8@0:4
+- authenticationToken  @8@0:4
+- profileID  @8@0:4
+- setProfileID:  v12@0:4@8
+- setRegionID:  v12@0:4@8
+- setRegionBasePhoneNumber:  v12@0:4@8
+- setRegionServerContext:  v12@0:4@8
+- registrationStatus  i8@0:4
+- setRegistrationStatus:  v12@0:4i8
+- removeCandidateEmail:  v12@0:4@8
+- saveToKeychain  c8@0:4
+- removeBinding:  c12@0:4@8
+- addCandidateEmail:  v12@0:4@8
+- vettedEmails  @8@0:4
+- setVettedEmails:  v12@0:4@8
+- registrationType  i8@0:4
+- setAuthenticationToken:  v12@0:4@8
+- bindings  @8@0:4
+- setBindings:  v12@0:4@8
+- setCert:  v12@0:4@8
+- setRegistrationType:  v12@0:4i8
+- confirmedEmails  @8@0:4
+- _userID  @8@0:4
+- setMainID:  v12@0:4@8
+- mainID  @8@0:4
+- candidateEmails  @8@0:4
+- isCDMA  @8@0:4
+- cert  @8@0:4
+- userID  @8@0:4
+- regionID  @8@0:4
+- regionBasePhoneNumber  @8@0:4
+- linkedIdentity  @8@0:4
+- removeFromKeychain  c8@0:4
+- signaturePrefix  @8@0:4
+- IDSVersion  @8@0:4
+- setIDSVersion:  v12@0:4@8
+- applicationVersion  @8@0:4
+- registrationDate  @8@0:4
+- setRegistrationDate:  v12@0:4@8
+- nextRegistrationDate  @8@0:4
+- setNextRegistrationDate:  v12@0:4@8
+- setIsCDMA:  v12@0:4@8
+- retries  i8@0:4
+- setRetries:  v12@0:4i8
+- absintheRetries  i8@0:4
+- setAbsintheRetries:  v12@0:4i8
+- dependantRegistrations  @8@0:4
+- setDependantRegistrations:  v12@0:4@8
+- regionServerContext  @8@0:4
+- needsProvisioning  c8@0:4
+- setNeedsProvisioning:  v12@0:4c8
+- _candidateEmails  @8@0:4
+- set_candidateEmails:  v12@0:4@8
+- migrationContext  @8@0:4
+- setMigrationContext:  v12@0:4@8
+- identityVersion  @8@0:4
+- setIdentityVersion:  v12@0:4@8
+- runningSimpleAuthentication  c8@0:4
+- setRunningSimpleAuthentication:  v12@0:4c8
+- keyPairSignature  @8@0:4
+- setKeyPairSignature:  v12@0:4@8
+- setLinkedIdentity:  v12@0:4@8
+- _keychain_comparisonValue  @8@0:4
+- _keychain_isEqual:  c12@0:4@8
+- _emailsToProvision  @8@0:4
+- _hasSentinel  c8@0:4
+- setDeviceName:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+- copyWithZone:  @12@0:4^{_NSZone=}8
+- userInfo  @8@0:4
+- isEqual:  c12@0:4@8
+- description  @8@0:4
+- guid  @8@0:4
+@end
+
+@interface IMDAppleRegistrationKeychainManager : NSObject
+  ivar _registrationData  @"NSMutableArray"
+  ivar _purgeTimer  @"IMTimer"
+  ivar _lock  @"NSRecursiveLock"
+  ivar _purgeCancelBlock  @?
+  ivar _purgeEnqueueBlock  @?
+  ivar _loaded  c
++ keychainServiceForVersion:  @12@0:4I8
++ keychainAccountForVersion:  @12@0:4I8
++ keychainAccessGroupForVersion:  @12@0:4I8
++ sharedInstance  @8@0:4
+- systemDidFinishMigration  v8@0:4
+- saveToKeychain  c8@0:4
+- removeRegistration:  c12@0:4@8
+- addRegistration:  c12@0:4@8
+- _flush  v8@0:4
+- reloadFromKeychain  v8@0:4
+- _saveToKeychain  c8@0:4
+- _setPurgeTimer  v8@0:4
+- _reloadFromDictionary:  v12@0:4@8
+- _loadIfNeeded  v8@0:4
+- registrationWithServiceType:registrationType:value:  @20@0:4i8i12@16
+- registrations  @8@0:4
+- removeAllRegistrations  c8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDAppleEmailInterface : NSObject
+  ivar _currentSearches  @"NSMutableDictionary"
+  ivar _handlers  @"NSMutableArray"
++ sharedInstance  @8@0:4
+- addListener:  v12@0:4@8
+- removeListener:  v12@0:4@8
+- startMonitoringForEmail:registrationInfo:  c16@0:4@8@12
+- _cancelAllSearches  v8@0:4
+- _existingSearchForEmail:  @12@0:4@8
+- _cancelSearchesForEmail:  v12@0:4@8
+- _startSearchingForRegistrationEmail:registrationInfo:attempt:  v20@0:4@8@12i16
+- _emailForSearch:  @12@0:4@8
+- _searchAttemptForSearch:  i12@0:4@8
+- _registrationInfoIDForSearch:  @12@0:4@8
+- search:didFindResults:  c16@0:4@8@12
+- search:didFinishWithError:  v16@0:4@8@12
+- _vettingIDForSearch:  @12@0:4@8
+- cancelMonitoringForEmail:registrationInfo:  c16@0:4@8@12
+- dealloc  v8@0:4
+@end
+
+@interface IMDAppleHeartbeatCenter : NSObject
+  ivar _registrations  @"NSMutableArray"
+  ivar _registrationHeartbeatDate  @"NSDate"
+  ivar _registrationHeartbeatTimer  @"IMTimer"
+  ivar _baseRegistrationHBI  d
++ sharedInstance  @8@0:4
+- _registrationsPendingHeartbeat  @8@0:4
+- updateHeartbeat  v8@0:4
+- _serverHeartBeat:  v12@0:4@8
+- _registration:needsRenewal:  c16@0:4@8^d12
+- _startRegistrationHeartbeat  v8@0:4
+- _nextRegistrationHeartbeatTime  d8@0:4
+- _bagReloaded:  v12@0:4@8
+- _registrationStateChangedNotification:  v12@0:4@8
+- _serverHeartBeatTimerHit:  v12@0:4@8
+- _updateRegistrationHeartbeat  v8@0:4
+- _stopRegistrationHeartbeat  v8@0:4
+- registrationHBI  d8@0:4
+- addRegistrationInfo:  v12@0:4@8
+- removeRegistrationInfo:  v12@0:4@8
+- systemDidWake  v8@0:4
+- init  @8@0:4
+@end
+
+@interface IMDAppleIDSRegistrationCenter : NSObject
+  ivar _queuedRegistrations  @"NSMutableArray"
+  ivar _queuedProvisionings  @"NSMutableArray"
+  ivar _queuedDeregistrations  @"NSMutableArray"
+  ivar _queuedRecoveries  @"NSMutableArray"
+  ivar _currentProvisionings  @"NSMutableArray"
+  ivar _currentRegistrations  @"NSMutableArray"
+  ivar _currentRecoveries  @"NSMutableArray"
+  ivar _handlers  @"NSMutableArray"
+  ivar _pendingDequeue  c
+  ivar _shouldUseAbsinthe  c
+  ivar _isBuildingContext  c
+  ivar _validationContext  ^{NACContextOpaque_=}
+  ivar _validationContextDisabled  c
+  ivar _validateContextDate  @"NSDate"
+  ivar _validateContextTTL  @"NSNumber"
+  ivar _validationContextQueue  @"NSMutableArray"
+  ivar _httpMessageDelivery  @"FTMessageDelivery"
+  ivar _pushHandler  @"FTPushHandler"
++ sharedInstance  @8@0:4
+- addListener:  v12@0:4@8
+- removeListener:  v12@0:4@8
+- isRegistering:  c12@0:4@8
+- cancelActionsForRegistrationInfo:  v12@0:4@8
+- sendRegistration:  c12@0:4@8
+- __cleanupValidationInfo  v8@0:4
+- _sendProvisionRegistration:  v12@0:4@8
+- _sendRegistration:  v12@0:4@8
+- _sendSignatureRecovery:  v12@0:4@8
+- _queueBuildingValidationDataIfNecessaryForMessage:  c12@0:4@8
+- _sendAbsintheValidationCertRequestIfNeeded  v8@0:4
+- __flushValidationQueue  v8@0:4
+- __failValidationQueue  v8@0:4
+- __queueValidationMessage:  v12@0:4@8
+- _dequeuePendingRequestsIfNecessary  v8@0:4
+- _notifyRegistrationSuccess:  v12@0:4@8
+- _notifyRegistrationFailure:error:info:  v20@0:4@8i12@16
+- _sendDeregistration:  v12@0:4@8
+- _notifyDeregistrationSuccess:  v12@0:4@8
+- _notifyDeregistrationFailure:error:info:  v20@0:4@8i12@16
+- provisionRegistration:  c12@0:4@8
+- _notifyProvisionFailure:error:fatal:info:  v24@0:4@8i12c16@20
+- _notifyProvisionSuccess:  v12@0:4@8
+- cancelRegisterActionsForRegistrationInfo:  v12@0:4@8
+- _hasRegistration:inQueue:  c16@0:4@8@12
+- sendSignatureRecovery:  c12@0:4@8
+- buildValidationCredentialsIfNeeded  v8@0:4
+- sendRequest:  c12@0:4@8
+- isDeregistering:  c12@0:4@8
+- getDependentHandles:completionBlock:  c16@0:4@8@?12
+- sendDeregistration:  c12@0:4@8
+- activeRegistrations  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDAppleRegistrationController : NSObject
+  ivar _deviceName  @"NSString"
+  ivar _handlers  @"NSMutableArray"
+  ivar _trackedRegistrations  @"NSMutableArray"
+  ivar _authenticatedRegistrations  @"NSMutableArray"
+  ivar _iMessageToken  i
+  ivar _faceTimeToken  i
++ initialize  v8@0:4
++ systemSupportsRegistrationInfo:  c12@0:4@8
++ sharedInstance  @8@0:4
+- addListener:  v12@0:4@8
+- removeListener:  v12@0:4@8
+- center:succeededInitialRegionQuery:  v16@0:4@8@12
+- center:succeededRegionValidation:regionID:phoneNumber:extraContext:verified:  v32@0:4@8@12@16@20@24c28
+- center:noteRegistrationRequired:  v16@0:4@8@12
+- center:failedAuthentication:error:info:  v24@0:4@8@12i16@20
+- center:succeededAuthentication:  v16@0:4@8@12
+- center:succeededLinkHandlesConfirmation:emailAddress:  v20@0:4@8@12@16
+- center:succeededCurrentEmailsRequest:emailInfo:  v20@0:4@8@12@16
+- cancelActionsForRegistrationInfo:  v12@0:4@8
+- registerInfo:  c12@0:4@8
+- center:failedProvisioning:error:info:  v24@0:4@8@12i16@20
+- center:succeededProvisioning:  v16@0:4@8@12
+- center:failedRegistration:error:info:  v24@0:4@8@12i16@20
+- center:succeededRegistration:  v16@0:4@8@12
+- center:failedDeregistration:error:info:  v24@0:4@8@12i16@20
+- center:succeededDeregistration:  v16@0:4@8@12
+- _notifyRegistrationSuccess:  v12@0:4@8
+- _notifyRegistrationFailure:error:info:  v20@0:4@8i12@16
+- _notifyDeregistrationSuccess:  v12@0:4@8
+- _notifyDeregistrationFailure:error:info:  v20@0:4@8i12@16
+- potentialLinkForRegistration:  @12@0:4@8
+- _registrationStatusChanged:  v12@0:4@8
+- _technologyChanged:  v12@0:4@8
+- _SIMInserted:  v12@0:4@8
+- _updateNotifyState  v8@0:4
+- registrationSupportedForRegistration:  c12@0:4@8
+- checkPhoneNumberLinkingForRegistration:againstRegistrations:requiredRegistrationStatus:  v20@0:4@8@12i16
+- _checkRegistrationCompleteSetupBeforeAuthentication:  c12@0:4@8
+- _ensureProfileQueriesAreReadyForRegistratration:  c12@0:4@8
+- _notifyRegistrationStarting:  v12@0:4@8
+- _notifyDeregistrationStarting:  v12@0:4@8
+- _checkPhoneNumberLinksForRegistration:  c12@0:4@8
+- _notifyNeedsNewRegistration  v8@0:4
+- _notifyRegistrationUpdated:  v12@0:4@8
+- unregisterInfo:  c12@0:4@8
+- _checkTechChange  v8@0:4
+- center:succeededIdentification:  v16@0:4@8@12
+- center:failedIdentification:error:  v20@0:4@8@12i16
+- centerNeedsNewIdentification:  v12@0:4@8
+- validRegistrationStateToAcceptCallsForRegistration:  c12@0:4@8
+- validRegistrationStateToMakeCallsForRegistration:  c12@0:4@8
+- startTrackingRegistration:  v12@0:4@8
+- stopTrackingRegistration:  v12@0:4@8
+- addAuthenticatedRegistration:  v12@0:4@8
+- removeAuthenticatedRegistration:  v12@0:4@8
+- _systemConfigurationPrefsChanged  v8@0:4
+- trackedRegistrations  @8@0:4
+- authenticatedRegistrations  @8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDAppleSMSRegistrationCenter : NSObject
+  ivar _pushHandler  @"FTPushHandler"
+  ivar _status  i
+  ivar _ctServer  ^{__CTServerConnection=}
+  ivar _handlers  @"NSMutableArray"
+  ivar _registrations  @"NSMutableArray"
+  ivar _numberOfSMSSent  I
+  ivar _SMSRetries  I
+  ivar _isSMSWarningUp  b1
+  ivar _hasAcceptedSMSRequest  b1
+  ivar _commCenterDead  b1
+  ivar _carrierShortcodeSupported  i
+  ivar _smsIsAvailable  b1
+  ivar _needsToCheckPhoneNumberState  b1
+  ivar _nextSendSMSDate  @"NSDate"
+  ivar _lastSendSMSTimer  @"IMTimer"
++ sharedInstance  @8@0:4
+- status  i8@0:4
+- heartbeat  v8@0:4
+- addListener:  v12@0:4@8
+- removeListener:  v12@0:4@8
+- systemDidStopBackup  v8@0:4
+- systemDidFinishMigration  v8@0:4
+- systemRestoreStateDidChange  v8@0:4
+- cancelActionsForRegistrationInfo:  v12@0:4@8
+- sendRegistration:  v12@0:4@8
+- _registrationStateChangedNotification:  v12@0:4@8
+- resetSMSCounter  v8@0:4
+- _scheduleHeartbeat:  v16@0:4d8
+- _registerForDeviceCenterNotifications  v8@0:4
+- _registerForLockdownNotifications  v8@0:4
+- _registerForCarrierNotifications  v8@0:4
+- _startupCoreTelephony  v8@0:4
+- _daemonShuttingDown:  v12@0:4@8
+- _clearSMSDeliveryTimeout  v8@0:4
+- _unregisterForCarrierNotifications  v8@0:4
+- _unregisterForCoreTelephonyNotifications  v8@0:4
+- _unregisterForCommCenterReadyNotifications  v8@0:4
+- ctServer  ^{__CTServerConnection=}8@0:4
+- _deviceIDChangedNotification:  v12@0:4@8
+- _airplaneModeChangedNotification:  v12@0:4@8
+- _registerForCommCenterReadyNotifications  v8@0:4
+- _registerForCoreTelephonyNotifications  v8@0:4
+- _commCenterAlive  v8@0:4
+- _failIfRegistrationIsNotSupported  c8@0:4
+- _deviceCanRegisterPresently  c8@0:4
+- _lockdownStateChanged:  v12@0:4@8
+- _smsDeliveryClear  v8@0:4
+- _canDeliverSMSNow  c8@0:4
+- _notifyFailureWithError:registration:  v16@0:4i8@12
+- timedOutWaitingForSMS  v8@0:4
+- _setSMSDeliveryTimeout:  v16@0:4d8
+- carrierSupportsShortCode  c8@0:4
+- _sendSMSVerification  v8@0:4
+- _notifyNeedsNewIdentification  v8@0:4
+- _checkRegistrationStatus  v8@0:4
+- _notifySuccess  v8@0:4
+- handleRegistrationSMSDeliveryFailed:  v12@0:4@8
+- _tryToSendSMSIdentification  v8@0:4
+- userNotificationDidFinish:  v12@0:4@8
+- _handleSMSAddressAvailable  v8@0:4
+- carrierSettingsChanged:  v12@0:4@8
+- handlePhoneNumberRegistrationStateChangedNotification:  v12@0:4@8
+- handlePhoneNumberChangedNotification:  v12@0:4@8
+- handleRegistrationSMSSuccessfullyDelivered:  v12@0:4@8
+- handleIncomingSMSForPhoneNumber:signature:  v16@0:4@8@12
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDAppleServiceSession : IMDServiceSession
+  ivar _pushHandler  @"FTPushHandler"
+  ivar _registrationInfo  @"IMDAppleRegistration"
+  ivar _restoreTimer  @"IMTimer"
+  ivar _duringInit  c
+  ivar _createdDuringSetup  c
+  ivar _shouldRequeryHandles  c
+  ivar _issuingDependentCheck  c
+  ivar _issuingHandlesCheck  c
+  ivar _pendingDepenantCheck  c
+  ivar _pendingHandlesCheck  c
+- serviceType  i8@0:4
+- systemDidStartBackup  v8@0:4
+- systemDidFinishMigration  v8@0:4
+- systemRestoreStateDidChange  v8@0:4
+- systemDidLeaveFirstDataProtectionLock  v8@0:4
+- center:failedRegionValidation:error:info:  v24@0:4@8@12i16@20
+- center:succeededRegionValidation:regionID:phoneNumber:extraContext:verified:  v32@0:4@8@12@16@20@24c28
+- center:startedAuthenticating:  v16@0:4@8@12
+- center:failedAuthentication:error:info:  v24@0:4@8@12i16@20
+- center:succeededAuthentication:  v16@0:4@8@12
+- center:failedUnlinkHandleRequest:handle:error:info:  v28@0:4@8@12@16i20@24
+- center:succeededUnlinkHandleRequest:handle:  v20@0:4@8@12@16
+- center:failedLinkHandlesConfirmation:emailAddress:error:info:  v28@0:4@8@12@16i20@24
+- center:succeededLinkHandlesConfirmation:emailAddress:  v20@0:4@8@12@16
+- center:failedEmailValidationRequest:emailAddress:error:info:  v28@0:4@8@12@16i20@24
+- center:succeededEmailValidationRequest:emailAddress:  v20@0:4@8@12@16
+- center:succeededCurrentEmailsRequest:emailInfo:  v20@0:4@8@12@16
+- center:succeededProvisioning:  v16@0:4@8@12
+- registrationControllerNeedsNewRegistration:  v12@0:4@8
+- registrationController:registrationUpdated:  v16@0:4@8@12
+- registrationController:registrationWillStart:  v16@0:4@8@12
+- registrationController:registrationFailed:error:info:  v24@0:4@8@12i16@20
+- registrationController:registrationSucceeded:  v16@0:4@8@12
+- registrationController:deregistrationWillStart:  v16@0:4@8@12
+- registrationController:deregistrationFailed:error:info:  v24@0:4@8@12i16@20
+- registrationController:deregistrationSucceeded:  v16@0:4@8@12
+- center:succeededIdentification:  v16@0:4@8@12
+- _registerForDeviceCenterNotifications  v8@0:4
+- _updateVettedAliases:emailInfo:addToCurrentHandlesIfNeeded:  v20@0:4@8@12c16
+- _validationStatusForAlias:  i12@0:4@8
+- addAliases:  v12@0:4@8
+- _setValidationStatus:error:forAlias:info:addToCurrentHandlesIfNeeded:forceAdd:  v32@0:4i8i12@16@20c24c28
+- _neededRegistrationType  i8@0:4
+- _rebuildRegistrationInfo:  c12@0:4c8
+- _aliasStrings  @8@0:4
+- initWithAccount:service:  @16@0:4@8@12
+- _pushTopics  @8@0:4
+- _updateRegistrationStatusWithError:info:  v16@0:4i8@12
+- _ignoreIncomingPushes  v8@0:4
+- _stopRegistrationAgent  c8@0:4
+- _isDeviceRegistered  c8@0:4
+- registerAccount  v8@0:4
+- _registrationAbilityChanged:  v12@0:4@8
+- _identityReloaded:  v12@0:4@8
+- deactivateAndPurgeIdentify  v8@0:4
+- aliases  @8@0:4
+- removeAliases:  v12@0:4@8
+- _updateLoginStatus  v8@0:4
+- _reregister  c8@0:4
+- _updatePhoneNumberCallerID  v8@0:4
+- _refreshRegistration  v8@0:4
+- _reregisterAndReidentify:  c12@0:4c8
+- sessionDidBecomeActive  v8@0:4
+- _acceptIncomingPushes  v8@0:4
+- _checkRegistration  v8@0:4
+- sessionWillBecomeInactive  v8@0:4
+- unregisterAccount  v8@0:4
+- _retryRegister  v8@0:4
+- _migrateRegistrationIfNeeded  c8@0:4
+- authenticateAccount  v8@0:4
+- vettedAliases  @8@0:4
+- validateAliases:  v12@0:4@8
+- _issueDependantCheck  v8@0:4
+- _updateHandles  v8@0:4
+- validateAlias:  v12@0:4@8
+- removeAlias:  v12@0:4@8
+- reregister  v8@0:4
+- validationStatusForAlias:  i12@0:4@8
+- addAlias:  v12@0:4@8
+- clearCallerIDCaches  v8@0:4
+- _isDeviceAuthenticated  c8@0:4
+- _aliases  @8@0:4
+- _validateAliases:validateAlreadyValid:  v16@0:4@8c12
+- pushTopics  @8@0:4
+- _updatePushHandler  v8@0:4
+- refreshRegistration  v8@0:4
+- callerURI  @8@0:4
+- loginServiceSession  v8@0:4
+- logoutServiceSession  v8@0:4
+- passwordUpdated  v8@0:4
+- updateAuthorizationCredentials:token:  v16@0:4@8@12
+- handler:connectionStatusChanged:  v16@0:4@8i12
+- handler:pushTokenChanged:  v16@0:4@8@12
+- handler:reregisterUserID:style:service:  v24@0:4@8@12@16@20
+- handler:reloadBag:  v16@0:4@8@12
+- handler:profile:deviceUpdated:service:  v24@0:4@8@12@16@20
+- handler:profileHandlesUpdated:status:  v20@0:4@8@12@16
+- handler:profile:emailConfirmed:status:  v24@0:4@8@12@16@20
+- unvalidateAliases:  v12@0:4@8
+- refreshVettedAliases  v8@0:4
+- validateProfile  v8@0:4
+- registration  @8@0:4
+- reidentity  v8@0:4
+- callerCert  @8@0:4
+- callerPrivateKey  ^{__SecKey=}8@0:4
+- certForURI:  @12@0:4@8
+- privateKeyForURI:  ^{__SecKey=}12@0:4@8
+- callerID  @8@0:4
+- pushHandler  @8@0:4
+- canMakeDowngradeRoutingChecks  c8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDAppleRegistrationKeyManager : NSObject
+  ivar _identity  ^{_SecMPFullIdentity=}
+  ivar _privateKey  ^{__SecKey={__CFRuntimeBase=I[4C]}^{__SecKeyDescriptor}^v}
+  ivar _publicKey  ^{__SecKey={__CFRuntimeBase=I[4C]}^{__SecKeyDescriptor}^v}
+  ivar _signature  @"NSString"
+  ivar _isMigratedSignature  c
+  ivar _loaded  c
+  ivar _identityLoaded  c
+  ivar _lock  @"NSRecursiveLock"
+  ivar _purgeCancelBlock  @?
+  ivar _purgeEnqueueBlock  @?
+  ivar _purgeTimer  @"IMTimer"
++ setupKeys  c8@0:4
++ sharedInstance  @8@0:4
+- keyPairSignature  @8@0:4
+- _setPurgeTimer  v8@0:4
+- publicMessageProtectionData  @8@0:4
+- identityPrivateKey  ^{__SecKey={__CFRuntimeBase=I[4C]}^{__SecKeyDescriptor}^v}8@0:4
+- generateCSRForUserID:  @12@0:4@8
+- isMigratedKeyPairSignature  c8@0:4
+- identityPublicKey  ^{__SecKey={__CFRuntimeBase=I[4C]}^{__SecKeyDescriptor}^v}8@0:4
+- purgeMessageProtectionIdentity  v8@0:4
+- _loadIfNeeded:  v12@0:4c8
+- _save  v8@0:4
+- _purgeMap  v8@0:4
+- copyMessageProtectionIdentity  ^{_SecMPFullIdentity=}8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDAppleIDNotification : NSObject
+  ivar _appleID  @"NSString"
+  ivar _deviceName  @"NSString"
+  ivar _aliases  @"NSMutableSet"
+  ivar _sessions  @"NSMutableSet"
+  ivar _serviceTypes  @"NSMutableSet"
+- deviceName  @8@0:4
+- aliases  @8@0:4
+- addAlias:  v12@0:4@8
+- addServiceType:  v12@0:4i8
+- addSession:  v12@0:4@8
+- appleID  @8@0:4
+- setAppleID:  v12@0:4@8
+- setAliases:  v12@0:4@8
+- sessions  @8@0:4
+- setSessions:  v12@0:4@8
+- serviceTypes  @8@0:4
+- setServiceTypes:  v12@0:4@8
+- setDeviceName:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface IMDAppleIDNotificationCenter : NSObject
+  ivar _availableNotifications  @"NSMutableArray"
+  ivar _usageNotifications  @"NSMutableArray"
++ sharedInstance  @8@0:4
+- removeNotificationsForSession:  v12@0:4@8
+- addAvailableNotificationForSession:appleID:alias:deviceName:serviceType:  v28@0:4@8@12@16@20i24
+- addUsageNotificationForSession:appleID:alias:deviceName:serviceType:  v28@0:4@8@12@16@20i24
+- _postAvailableNotificationForSessions:appleID:aliases:deviceName:serviceTypes:  v28@0:4@8@12@16@20@24
+- _postUsageNotificationForSessions:appleID:aliases:deviceName:serviceTypes:  v28@0:4@8@12@16@20@24
+- _processAvailableNotifications  v8@0:4
+- _processUsageNotifications  v8@0:4
+- _noteNewAvailableNotification:  v12@0:4@8
+- _noteNewUsageNotification:  v12@0:4@8
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+### /System/Library/PrivateFrameworks/IMDPersistence.framework/IMDPersistence (2 classes)
+
+@interface _IMDPersistenceThreadObject : NSObject
+  ivar _thread  @"NSThread"
+  ivar _runLoop  @"NSRunLoop"
+  ivar _runLoopSource  ^{__CFRunLoopSource=}
++ sharedInstance  @8@0:4
+- performBlock:  v12@0:4@?8
+- _threadedMain  v8@0:4
+- thread  @8@0:4
+- performBlock:afterDelay:  v20@0:4@?8d12
+- performBlock:waitUntilDone:  v16@0:4@?8c12
+- isCurrentThreadDBThread  c8@0:4
+- init  @8@0:4
+@end
+
+@interface IMDPersistentAttachmentController : NSObject
++ sharedInstance  @8@0:4
+- _persistentPathForTransfer:  @12@0:4@8
+- saveAttachmentForTransfer:  @12@0:4@8
+- deleteAttachmentForTransfer:  c12@0:4@8
+- cleanseOrphanedFileTransfers  c8@0:4
+@end
+
+### /System/Library/PrivateFrameworks/IMDMessageServices.framework/IMDMessageServices (1 classes)
+
+@interface IMDMessageServicesCenter : NSObject
+  ivar _connection  @"NSObject<OS_xpc_object>"
++ sharedInstance  @8@0:4
+- _requestRoutingWithGUID:chatGUID:error:handler:  v24@0:4@8@12I16@?20
+- requestRoutingForMessageGuid:inChat:error:completionBlock:  v24@0:4@8@12I16@?20
+- requestRoutingWithCompletion:  v12@0:4@?8
+- _disconnected  v8@0:4
+- _connect  c8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- _disconnect  c8@0:4
+@end
+
+### /System/Library/Messages/PlugIns/SMS.imservice/SMS (14 classes)
+
+@interface SMSServiceSession : IMDServiceSession
+  ivar _outgoingMessageMap  @"NSMutableDictionary"
+  ivar _outgoingMessageBlockMap  @"NSMutableDictionary"
+  ivar _outgoingMessageFailureMap  @"NSMutableDictionary"
+- _registerForCTNotifications  v8@0:4
+- _clearPendingIncomingMessageQueue  v8@0:4
+- updateMMSCapability  v8@0:4
+- _unregisterForCTNotifications  v8@0:4
+- _generateMessageIDForMessageGUID:completionBlock:failureBlock:  I20@0:4@8@?12@?16
+- _failureBlockForMessageGUID:  @?12@0:4@8
+- _clearMapForMessageGUID:  v12@0:4@8
+- _readMMSUserOverride  C8@0:4
+- _checkMMSEnablement  c8@0:4
+- _messageGUIDForMessageID:  @12@0:4i8
+- _completionBlockForMessageGUID:  @?12@0:4@8
+- _processReceivedMessage:  v12@0:4@8
+- _processMessageSent:  v12@0:4I8
+- _processMessageSendFailure:  v12@0:4I8
+- sendMessage:toChat:style:  v20@0:4@8@12C16
+- invitePersonInfo:withMessage:toChat:style:  v24@0:4@8@12@16C20
+- joinChat:handleInfo:style:joinProperties:  v24@0:4@8@12C16@20
+- leaveChat:style:  v16@0:4@8C12
+- sendReadReceiptForMessage:toChatID:identifier:style:  v24@0:4@8@12@16C20
+- initWithAccount:service:  @16@0:4@8@12
+- _updatePhoneNumberCallerID  v8@0:4
+- sessionDidBecomeActive  v8@0:4
+- sessionWillBecomeInactive  v8@0:4
+- refreshServiceCapabilities  v8@0:4
+- loginServiceSession  v8@0:4
+- logoutServiceSession  v8@0:4
+- capabilities  Q8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface SMSToSuperParserContext : IMHTMLToSuperParserContext
+  ivar _orderedParts  @"NSMutableArray"
+  ivar _currentTextPart  @"SMSTextPart"
+- orderedParts  @8@0:4
+- _addPart:  v12@0:4@8
+- dealloc  v8@0:4
+- name  @8@0:4
+@end
+
+@interface SMSToSuper_Default_Frame : IMToSuperParserFrame
+- _addAttachmentPartWithSource:toContext:  v16@0:4@8@12
+- parser:context:foundCharacters:  v20@0:4@8@12@16
+@end
+
+@interface SMSToSuper_PAR_Frame : SMSToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface SMSToSuper_TEXT_Frame : SMSToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+- parser:context:foundCharacters:  v20@0:4@8@12@16
+@end
+
+@interface SMSToSuper_IMG_Frame : SMSToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface SMSToSuper_AUDIO_Frame : SMSToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface SMSToSuper_VIDEO_Frame : SMSToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface SMSToSuper_REF_Frame : SMSToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+- parser:context:didEndElement:namespaceURI:qualifiedName:  v28@0:4@8@12@16@20@24
+@end
+
+@interface SuperToSMSParserContext : IMFromSuperParserContext
+  ivar _outHTML  @"NSMutableString"
+  ivar _isSimpleString  c
+- initWithAttributedString:  @12@0:4@8
+- isSimpleString  c8@0:4
+- outHTML  @8@0:4
+- resultsForLogging  @8@0:4
+- parser:preprocessedAttributesForAttributes:range:  @24@0:4@8@12{_NSRange=II}16
+- shouldPreprocess  c8@0:4
+- parserDidEnd:  v12@0:4@8
+- parserDidStart:bodyAttributes:  v16@0:4@8@12
+- parser:foundAttributes:inRange:fileTransferGUID:filename:bookmark:width:height:  v44@0:4@8@12{_NSRange=II}16@24@28@32@36@40
+- parser:foundAttributes:inRange:characters:  v28@0:4@8@12{_NSRange=II}16@24
+- dealloc  v8@0:4
+- name  @8@0:4
+@end
+
+@interface SMSAttachmentController : NSObject
+  ivar _connectionMap  @"NSMutableDictionary"
+  ivar _fileTransferMap  @"NSMutableDictionary"
+  ivar _contextMap  @"NSMutableDictionary"
+  ivar _blockMap  @"NSMutableDictionary"
++ _maxMMSSize  i8@0:4
++ sharedInstance  @8@0:4
+- processAttachmentsForMessage:generateTextParts:completionBlock:  v20@0:4@8c12@?16
+- dealloc  v8@0:4
+@end
+
+@interface SMSPart : NSObject
+  ivar _textParts  @"NSMutableArray"
+  ivar _attachmentParts  @"NSMutableArray"
+- textParts  @8@0:4
+- addAttachmentPart:  v12@0:4@8
+- addTextPart:  v12@0:4@8
+- attachmentParts  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface SMSAttachmentPart : NSObject
+  ivar _contentLocation  @"NSString"
+- initWithContentLocation:  @12@0:4@8
+- contentLocation  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface SMSTextPart : NSObject
+  ivar _contentLocation  @"NSString"
+  ivar _text  @"NSMutableString"
+- text  @8@0:4
+- initWithContentLocation:  @12@0:4@8
+- appendText:  v12@0:4@8
+- contentLocation  @8@0:4
+- dealloc  v8@0:4
+@end
+
+### /System/Library/PrivateFrameworks/IMTransferServices.framework/IMTransferServices (1 classes)
+
+@interface IMTransferServicesController : NSObject
+  ivar _connection  @"NSObject<OS_xpc_object>"
++ sharedInstance  @8@0:4
+- receiveFileTransfer:path:requestURLString:ownerID:signature:decryptionKey:completionBlock:  v36@0:4@8@12@16@20@24@28@?32
+- sendFilePath:transferID:encryptFile:completionBlock:  v24@0:4@8@12c16@?20
+- _disconnected  v8@0:4
+- _sendFilePath:transferID:encryptFile:retries:completionBlock:  v28@0:4@8@12c16i20@?24
+- _receiveFileTransfer:path:requestURLString:ownerID:signature:decryptionKey:retries:completionBlock:  v40@0:4@8@12@16@20@24@28i32@?36
+- _connect  c8@0:4
+- init  @8@0:4
+- dealloc  v8@0:4
+- _disconnect  c8@0:4
+@end
+
+### /System/Library/Messages/PlugIns/iMessage.imservice/iMessage (15 classes)
+
+@interface MessageServiceSession : IMDAppleServiceSession
+  ivar _incomingMessageMultiQueue  @"IMMultiQueue"
+  ivar _networkOverride  c
+- _iMessageBagLoaded:  v12@0:4@8
+- _updateNetworkOverride  v8@0:4
+- didReceiveMessage:forChat:style:  v20@0:4@8@12C16
+- _logLocalInfo  v8@0:4
+- _enqueueBlock:withTimeout:forKey:  v24@0:4@?8d12@20
+- _handler:incomingMessage:encryptionType:messageID:toIdentifier:fromIdentifier:fromToken:timeStamp:storageContext:allowRetry:completionBlock:  v52@0:4@8@12@16@20@24@28@32@36@40c44@?48
+- _handleMessageSentToSelf:chatIdentifier:style:isLocal:  v24@0:4@8@12C16c20
+- sendMessage:toChat:style:  v20@0:4@8@12C16
+- networkConditionsAllowLogin  c8@0:4
+- invitePersonInfo:withMessage:toChat:style:  v24@0:4@8@12@16C20
+- joinChat:handleInfo:style:joinProperties:  v24@0:4@8@12C16@20
+- leaveChat:style:  v16@0:4@8C12
+- sendReadReceiptForMessage:toChatID:identifier:style:  v24@0:4@8@12@16C20
+- sendCommand:withProperties:toPerson:  v20@0:4@8@12@16
+- sendData:toPerson:  v16@0:4@8@12
+- requestProperty:ofPerson:  v16@0:4@8@12
+- handler:incomingMessage:encryptionType:messageID:toIdentifier:fromIdentifier:fromToken:timeStamp:storageContext:  v44@0:4@8@12@16@20@24@28@32@36@40
+- handler:incomingAttachmentMessage:encryptionType:messageID:toIdentifier:fromIdentifier:fromToken:timeStamp:storageContext:  v44@0:4@8@12@16@20@24@28@32@36@40
+- handler:messageIDDelivered:status:deliveryContext:timeStamp:storageContext:  v32@0:4@8@12@16@20@24@28
+- handler:receivedError:forMessageID:toIdentifier:fromIdentifier:fromToken:timeStamp:storageContext:  v40@0:4@8@12@16@20@24@28@32@36
+- handler:messageIDRead:toIdentifier:fromIdentifier:fromToken:timeStamp:storageContext:  v36@0:4@8@12@16@20@24@28@32
+- handler:genericNotification:toIdentifier:fromIdentifier:fromToken:timeStamp:storageContext:  v36@0:4@8@12@16@20@24@28@32
+- handler:receivedGenericData:toIdentifier:fromIdentifier:fromToken:timeStamp:storageContext:  v36@0:4@8@12@16@20@24@28@32
+- handler:requestsPendingMessageAck:  v16@0:4@8c12
+- serviceType  i8@0:4
+- initWithAccount:service:  @16@0:4@8@12
+- _isDeviceRegistered  c8@0:4
+- sessionDidBecomeActive  v8@0:4
+- sessionWillBecomeInactive  v8@0:4
+- refreshServiceCapabilities  v8@0:4
+- pushTopics  @8@0:4
+- refreshRegistration  v8@0:4
+- capabilities  Q8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface MessageToSuperParserContext : IMHTMLToSuperParserContext
+- name  @8@0:4
+@end
+
+@interface MessageToSuper_Default_Frame : IMToSuperParserFrame
+- parser:context:foundCharacters:  v20@0:4@8@12@16
+@end
+
+@interface MessageToSuper_FILE_Frame : MessageToSuper_Default_Frame
+- parser:context:didStartElement:namespaceURI:qualifiedName:attributes:  v32@0:4@8@12@16@20@24@28
+@end
+
+@interface SuperToMessageParserContext : IMFromSuperParserContext
+  ivar _outHTML  @"NSMutableString"
+  ivar _isSimpleString  c
+- initWithAttributedString:  @12@0:4@8
+- isSimpleString  c8@0:4
+- outHTML  @8@0:4
+- resultsForLogging  @8@0:4
+- parser:preprocessedAttributesForAttributes:range:  @24@0:4@8@12{_NSRange=II}16
+- shouldPreprocess  c8@0:4
+- parserDidEnd:  v12@0:4@8
+- parserDidStart:bodyAttributes:  v16@0:4@8@12
+- parser:foundAttributes:inRange:fileTransferGUID:filename:bookmark:width:height:  v44@0:4@8@12{_NSRange=II}16@24@28@32@36@40
+- parser:foundAttributes:inRange:characters:  v28@0:4@8@12{_NSRange=II}16@24
+- dealloc  v8@0:4
+- name  @8@0:4
+@end
+
+@interface MessageDeliveryController : NSObject
+  ivar _messageDelivery  @"FTMessageDelivery"
+  ivar _messageQueue  @"NSMutableDictionary"
+  ivar _deliveryQueues  @"IMMultiQueue"
+  ivar _typingContext  @"NSMutableDictionary"
+  ivar _typingContextTimer  @"IMTimer"
++ sharedInstance  @8@0:4
+- sendMessageError:toToken:toID:fromID:fromIdentity:forMessageID:completionBlock:  v36@0:4i8@12@16@20@24@28@?32
+- noteRecentMessageForPeople:  v12@0:4@8
+- sendFTMessage:fromID:fromIdentity:completionBlock:  v24@0:4@8@12@16@?20
+- sendMessage:toPeople:fromID:fromIdentity:completionBlock:  v28@0:4@8@12@16@20@?24
+- sendFTMessage:toPeople:fromID:fromIdentity:completionBlock:  v28@0:4@8@12@16@20@?24
+- _sendMessage:fromID:fromIdentity:toID:toToken:toSessionToken:toPeople:originallyToPeople:type:completionBlock:  v48@0:4@8@12@16@20@24@28@32@36i40@?44
+- _sendMessage:messageString:messageDictionary:fromID:fromIdentity:toID:toToken:toSessionToken:toPeople:ackBlock:completionBlock:  v52@0:4@8@12@16@20@24@28@32@36@40@?44@?48
+- _sendFTMessage:fromID:fromIdentity:toID:toToken:toSessionToken:toPeople:completionBlock:  v40@0:4@8@12@16@20@24@28@32@?36
+- _checkFastDormancy  v8@0:4
+- _processMessageReponse:error:resultCode:toURI:fromURI:  v28@0:4@8@12i16@20@24
+- _queueMessage:fromID:fromIdentity:toID:toToken:toPeople:originallyToPeople:actionType:completionBlock:  v44@0:4@8@12@16@20@24@28@32i36@?40
+- _handleMessagesForURIs:originalURIs:  v16@0:4@8@12
+- _emptyMessagesForURIs:  v12@0:4@8
+- __pruneTypingContexts  v8@0:4
+- _setTimerForPruningTypingContext  v8@0:4
+- _hasRecentlyMessaged:  c12@0:4@8
+- _enqueueSendMessageWorkBlock:forURIs:  v16@0:4@?8@12
+- cancelMessageSend:  v12@0:4@8
+- sendFTMessage:toToken:toID:fromID:fromIdentity:completionBlock:  v32@0:4@8@12@16@20@24@?28
+- sendFTMessage:completionBlock:  v16@0:4@8@?12
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface MessageEncryptionHelpers : NSObject
++ noteEncryptionErrorForToken:forURI:fromURI:messageData:type:encrypt:remote:  v36@0:4@8@12@16@20i24c28c32
++ encryptMessage:forURI:fromURI:forToken:encryptionType:error:  @32@0:4@8@12@16@20^i24^i28
++ decryptMessage:forURI:fromURI:fromToken:encryptionType:error:  @32@0:4@8@12@16@20i24^i28
+@end
+
+@interface MessagePeerIDManager : NSObject
+  ivar _idQueryMessageDelivery  @"FTMessageDelivery"
+  ivar _pushHandler  @"FTPushHandler"
+  ivar _timers  @"NSMutableArray"
+  ivar _peerMap  @"NSMutableDictionary"
+  ivar _completionBlocksToURIsMap  @"NSMutableDictionary"
+  ivar _purgeCompletionBlocks  @"NSMutableDictionary"
+  ivar _extraCompletionBlocks  @"NSMutableDictionary"
+  ivar _isInServerBackoffMode  c
++ timeToCachePositiveResults  d8@0:4
++ timeToCacheNegativeResults  d8@0:4
++ timeToCacheUnknownResults  d8@0:4
++ isServerBackoffModeActive  c8@0:4
++ serverBackoffModeMaxSenderRetries  i8@0:4
++ serverBackoffModeReceiverRetryInterval  i8@0:4
++ timeToCacheResultsForIDStatus:  d12@0:4I8
++ sharedInstance  @8@0:4
+- addCompletionBlock:forToken:  v16@0:4@?8@12
+- addPurgeCompletionBlock:forToken:  v16@0:4@?8@12
+- removeCompletionBlockForToken:  v12@0:4@8
+- removePurgeCompletionBlockForToken:  v12@0:4@8
+- shouldShowPeerErrorsFor:pushToken:fromURI:  c20@0:4@8@12@16
+- forgetPeerTokensForURI:fromURI:  v16@0:4@8@12
+- notePeerToken:forURI:fromURI:  v20@0:4@8@12@16
+- sessionTokenForURI:pushToken:fromURI:  @20@0:4@8@12@16
+- peerTokensForURI:fromURI:  @16@0:4@8@12
+- hasPeerTokensForURI:fromURI:  c16@0:4@8@12
+- startQueryForURIs:fromIdentity:fromURI:forSending:completionBlock:  c28@0:4@8@12@16c20@?24
+- _bagLoaded:  v12@0:4@8
+- _existingPeerMapFromURI:  @12@0:4@8
+- forgetSessionTokensForURIs:fromURI:  v16@0:4@8@12
+- _purgeMapFromURI:  v12@0:4@8
+- _purgeTimerFired:  v12@0:4@8
+- _peerMapFromURI:  @12@0:4@8
+- _setPurgeTimerFromURI:  v12@0:4@8
+- _sessionExpiredForURI:inPeerMap:  c16@0:4@8@12
+- _peerTokensForURI:fromURI:  @16@0:4@8@12
+- forgetSessionTokensForURI:fromURI:  v16@0:4@8@12
+- hasPeerTokensForURIs:fromURI:  c16@0:4@8@12
+- _setIdentityInfo:sessionTokens:forURI:fromURI:  c24@0:4@8@12@16@20
+- _completionBlocksForURIs:fromURI:  @16@0:4@8@12
+- _removeCompletionBlocksForURIs:fromURI:  v16@0:4@8@12
+- _addCompletionBlock:forURIs:fromURI:  c20@0:4@?8@12@16
+- _startQueryForURIs:fromIdentity:fromURI:forSending:completionBlock:  v28@0:4@8@12@16c20@?24
+- startQueryForURIs:fromIdentity:fromURI:  c20@0:4@8@12@16
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface MessageAttachmentController : NSObject
++ sharedInstance  @8@0:4
+- retrieveAttachmentsForMessage:displayID:token:completionBlock:  v24@0:4@8@12@16@?20
+- sendAttachmentsForMessage:displayIDs:completionBlock:  v20@0:4@8@12@?16
+- sendAttachmentMessage:encryptedData:toToken:toID:toPeople:fromID:fromIdentity:completionBlock:  v40@0:4@8@12@16@20@24@28@32@?36
+- shouldSendLowResolutionOnly  c8@0:4
+- _utiIsForAudio:  c12@0:4@8
+- maxTransferAudioFileSizeForWifi:cell:  I16@0:4^I8^I12
+- _utiIsForVideo:  c12@0:4@8
+- maxTransferVideoFileSizeForWifi:cell:  I16@0:4^I8^I12
+- maxTransferFileSizeForWifi:cell:  v16@0:4^I8^I12
+- _sizeLimitsForTransfer:bigSize:smallSize:  v20@0:4@8^I12^I16
+- shouldReceiveLowResolutionOnly  c8@0:4
+@end
+
+@interface MessageEncryptionController : NSObject
+  ivar _encryptionThread  @"NSThread"
+  ivar _runLoop  @"NSRunLoop"
+  ivar _runLoopSource  ^{__CFRunLoopSource=}
+  ivar _contextMap  @"NSMutableDictionary"
+  ivar _privateKey  @"NSData"
++ sharedInstance  @8@0:4
+- performBlock:  v12@0:4@?8
+- setPrivateKey:  v12@0:4@8
+- noteRemoteDecryptionErrorForToken:forURI:fromURI:messageData:type:  v28@0:4@8@12@16@20i24
+- noteRemoteEncryptionErrorForToken:forURI:fromURI:messageData:type:  v28@0:4@8@12@16@20i24
+- decryptMessageData:myURI:myIdentity:fromURI:token:type:completionBlock:  v36@0:4@8@12@16@20@24i28@?32
+- encryptMessageData:myURI:myIdentity:toURI:toToken:completionBlock:  v32@0:4@8@12@16@20@24@?28
+- checkThread  v8@0:4
+- noteDecryptionErrorForToken:forURI:fromURI:messageData:type:  v28@0:4@8@12@16@20i24
+- noteEncryptionErrorForToken:forURI:fromURI:messageData:type:  v28@0:4@8@12@16@20i24
+- privateKey  @8@0:4
+- _threadedMain  v8@0:4
+- performBlock:waitUntilDone:  v16@0:4@?8c12
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface MessagePublicKeyCacheEntry : NSObject
+  ivar _fromURI  @"NSString"
+  ivar _forURI  @"NSString"
+  ivar _map  @"NSMutableDictionary"
+- fromURI  @8@0:4
+- setFromURI:  v12@0:4@8
+- forURI  @8@0:4
+- setForURI:  v12@0:4@8
+- setMap:  v12@0:4@8
+- map  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface MessagePublicKeyStorage : NSObject
+  ivar _keyStorage  @"NSMutableDictionary"
++ sharedInstance  @8@0:4
+- publicKeyForToken:forURI:fromURI:  @20@0:4@8@12@16
+- copyPublicIdentityForToken:forURI:fromURI:  ^{_SecMPPublicIdentity=}20@0:4@8@12@16
+- storePublicKey:forToken:forURI:fromURI:  v24@0:4@8@12@16@20
+- removePublicKeyForToken:forURI:fromURI:  v20@0:4@8@12@16
+- hasPublicKeyForToken:forURI:fromURI:  c20@0:4@8@12@16
+- _existingEntryFromURI:forURI:  @16@0:4@8@12
+- _entryFromURI:forURI:  @16@0:4@8@12
+- _purgeOrphanedKeysToThreshold  v8@0:4
+- _purgeEntryIfNecessaryWithFromURI:forURI:  v16@0:4@8@12
+@end
+
+@interface MessageTranscodeController : NSObject
++ sharedInstance  @8@0:4
+- transcodeFileTransferContents:utiType:transcoderUserInfo:highQualityMaxByteSize:lowQualityMaxByteSize:representations:completionBlock:  v36@0:4@8@12@16L20L24i28@?32
+@end
+
+@interface MessagePeerCache : NSObject
+  ivar _peerCache  @"NSMutableDictionary"
+  ivar _lookupDates  @"NSMutableDictionary"
+  ivar _completionBlocks  @"NSMutableDictionary"
++ sharedInstance  @8@0:4
+- addCompletionBlock:forToken:  v16@0:4@?8@12
+- removeCompletionBlockForToken:  v12@0:4@8
+- IDStatusForURI:  I12@0:4@8
+- lookupIDStatusForURI:displayID:fromIdentity:fromURI:  c24@0:4@8@12@16@20
+- _setIDStatus:forURI:displayID:  v20@0:4I8@12@16
+- shouldLookupIDStatusForURI:fromIdentity:fromURI:  c20@0:4@8@12@16
+- lookupIDStatusForURI:fromIdentity:fromURI:  c20@0:4@8@12@16
+- init  @8@0:4
+- dealloc  v8@0:4
+@end
+
+@interface MessageAttachmentCompressionController : NSObject
+  ivar _blockMap  @"NSMutableDictionary"
++ sharedInstance  @8@0:4
+- compressFileTransfer:completionBlock:  v16@0:4@8@?12
+- _mapCopier:toBlock:  v16@0:4@8@?12
+- _blockForCopier:  @?12@0:4@8
+- _unmapCopier:  v12@0:4@8
+- fileCopierDidStart:  v12@0:4@8
+- fileCopierDidFinish:  v12@0:4@8
+@end

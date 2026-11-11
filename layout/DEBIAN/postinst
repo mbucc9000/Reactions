@@ -1,0 +1,5 @@
+#!/bin/sh
+# Restart imagent (loads ReactionsAgent) and Messages after installing. launchd restarts imagent by itself.
+killall -9 imagent >/dev/null 2>&1
+killall -9 MobileSMS >/dev/null 2>&1
+exit 0
