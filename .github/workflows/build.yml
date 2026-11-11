@@ -1,0 +1,65 @@
+# Compila el tweak y deja el .deb listo para descargar en la pestaña "Actions" de GitHub.
+# Se ejecuta solo en cada "push" (cada vez que se suben cambios) y también a mano
+# desde Actions > "Compilar tweak" > "Run workflow".
+#
+# No hay ningún SDK de iOS 6.1 descargable de forma pública, así que se compila con el SDK de iOS 9.3
+# de theos/sdks apuntando a iOS 6.0 (armv7). El código solo usa API de iOS 6.0 (RXShared.h).
+
+name: Compilar tweak
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      THEOS: ${{ github.workspace }}/theos
+    steps:
+      - name: Descargar el código del tweak
+        uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Instalar dependencias
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential fakeroot rsync curl perl zip git libxml2 libtinfo6 xz-utils
+
+      - name: Instalar Theos
+        run: git clone --recursive --depth 1 https://github.com/theos/theos.git "$THEOS"
+
+      - name: Instalar el compilador para iOS
+        run: |
+          mkdir -p "$THEOS/toolchain"
+          curl -sSL https://github.com/L1ghtmann/llvm-project/releases/latest/download/iOSToolchain-x86_64.tar.xz \
+            | tar -xJf - -C "$THEOS/toolchain/"
+          "$THEOS/toolchain/linux/iphone/bin/clang" --version
+
+      - name: Instalar el SDK de iOS 9.3
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse https://github.com/theos/sdks.git "$RUNNER_TEMP/sdks"
+          git -C "$RUNNER_TEMP/sdks" sparse-checkout set iPhoneOS9.3.sdk
+          mkdir -p "$THEOS/sdks"
+          mv "$RUNNER_TEMP/sdks/iPhoneOS9.3.sdk" "$THEOS/sdks/"
+
+      - name: Compilar el .deb
+        working-directory: src
+        # gzip: el dpkg de Cydia en iOS 6 lo abre siempre.
+        run: make package FINALPACKAGE=1 THEOS_PLATFORM_DEB_COMPRESSION_TYPE=gzip
+
+      - name: Comprobar el binario
+        working-directory: src
+        run: |
+          ls -l packages/
+          f=$(find .theos -name '*.dylib' -path '*obj*' | head -1)
+          file "$f" || true
+          "$THEOS/toolchain/linux/iphone/bin/otool" -l "$f" | grep -A3 -E 'LC_VERSION_MIN_IPHONEOS|LC_BUILD_VERSION' || true
+
+      - name: Guardar el .deb para descargarlo
+        uses: actions/upload-artifact@v4
+        with:
+          name: Reactions-deb
+          path: src/packages/*.deb
+          if-no-files-found: error
