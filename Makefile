@@ -1,6 +1,6 @@
-# SDK 9.3 (GitHub Actions, theos/sdks) apuntando a iOS 6.0. Con el SDK de iOS 6.1 instalado se puede usar:
+# SDK 10.3 (GitHub Actions, theos/sdks) apuntando a iOS 6.0. Con el SDK de iOS 6.1 instalado se puede usar:
 #   make package TARGET=iphone:clang:6.1:6.0
-TARGET ?= iphone:clang:9.3:6.0
+TARGET ?= iphone:clang:10.3:6.0
 ARCHS = armv7
 
 include $(THEOS)/makefiles/common.mk
