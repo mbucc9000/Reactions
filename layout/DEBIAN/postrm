@@ -1,0 +1,8 @@
+#!/bin/sh
+case "$1" in
+    remove|purge)
+        killall -TERM imagent 2>/dev/null || true
+        killall -9 MobileSMS 2>/dev/null || true
+        ;;
+esac
+exit 0

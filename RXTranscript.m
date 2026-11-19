@@ -25,9 +25,17 @@
 // endUpdates and the forced reload only run behind the gate; only our own views' frames are set; no UILabel;
 // ChatKit classes only through NSClassFromString; every private selector behind respondsToSelector:; teardown
 // never reads prefs; logs carry counts, flags and GUID tails only. Main thread only.
+//
+// Edits (2.2.0, DESIGN 4.5): ChatKit saves a text row's text AND its size when the row is appended
+// (_appendTextMessage: CK@0x33920 stores the text, then the measured CKBubbleDataSizeKey); cellForRow re-reads
+// [part text] but keeps that size. So the edited text is pinned on the part (read by the -[CKTextMessagePart
+// text] hook) only in the append hook, before %orig, and a change shows only through a rebuild: a build that
+// finds an edit after its bubble was appended runs once more inside the same _computeBubbleData: call, a live
+// edit queues the gated reload (never the beginUpdates/endUpdates refresh, which keeps the saved sizes).
 
 #import "RXShared.h"
 #include <math.h>
+#include <pthread.h>
 
 #pragma mark - Private declarations (methods only, never class symbols)
 
@@ -97,6 +105,7 @@
 @property (nonatomic, assign) NSInteger partKey;
 @property (nonatomic, assign) BOOL hasBadge;
 @property (nonatomic, assign) BOOL hasQuote;
+@property (nonatomic, assign) BOOL hasEdited;               // this row's bubble shows its pinned (edited) text
 @property (nonatomic, assign) BOOL outgoing;
 @property (nonatomic, assign) CFTimeInterval badgeOutUntil;  // animated removal still running until then
 @end
@@ -127,6 +136,37 @@
 
 @end
 
+// The edited text pinned on a CKTextMessagePart (associated object; DESIGN 4.5). One immutable plain string per
+// part, reused while the text is unchanged (ChatKit's setAttributedText: early-outs on the same pointer). The
+// live-pin count is the text hook's fast path; a pin dies with its part, so the count never leaks.
+@interface RXTEditPin : NSObject {
+@public
+    NSAttributedString *_text;
+}
+- (instancetype)initWithText:(NSString *)text;
+@end
+
+static volatile int32_t gEditPins;                  // live RXTEditPin objects (any thread may free one)
+
+@implementation RXTEditPin
+
+- (instancetype)initWithText:(NSString *)text
+{
+    self = [super init];
+    if (self) {
+        _text = [[NSAttributedString alloc] initWithString:(text ? text : @"")];
+        __sync_fetch_and_add(&gEditPins, 1);
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    __sync_fetch_and_sub(&gEditPins, 1);
+}
+
+@end
+
 #pragma mark - Globals
 
 static char kRXTTagKey;          // on a CKTranscriptBubbleData: RXTBubbleTag
@@ -134,6 +174,9 @@ static char kRXTStateKey;        // on a CKTranscriptController: RXTState
 static char kRXTCellInfoKey;     // on a CKMessageCell: RXTCellInfo
 static char kRXTBadgeViewKey;    // on a CKMessageCell: RXReactionBalloonView
 static char kRXTQuoteViewKey;    // on a CKMessageCell: RXQuoteBalloonView
+static char kRXTEditedViewKey;   // on a CKMessageCell: RXEditedMarkerView
+static char kRXTEditPinKey;      // on a CKTextMessagePart: RXTEditPin (set/cleared only by RXTranscriptPinEdits)
+static char kRXTEditedPartsKey;  // on a CKTranscriptBubbleData: NSHashTable (identity) of parts its appends pinned
 
 static NSInteger gBuildDepth;                       // > 0 inside -_computeBubbleData:
 static __weak CKTranscriptController *gBuildTC;
@@ -144,6 +187,9 @@ static NSUInteger gBuildRetargets;
 static id gBuildReadTarget;                         // message that received status 2 in this build
 static BOOL gBuildNeedsRestart;                     // the chat's store still has to restart for this build
 static id gBuildOldData;                            // bubble data before the build (an early return makes none)
+static NSUInteger gBuildPinned;                     // text parts appended with an edited text in this build
+static BOOL gBuildWantsRerun;                       // BuildEnd: the shown edits changed, re-run the build once
+static BOOL gBuildInRerun;                          // inside that one re-run (never chained)
 static NSInteger gOwnSendDepth;                     // > 0 inside -appendMessageToBubbleData:
 static NSInteger gOwnReloadDepth;                   // > 0 inside our own forced reload
 static NSHashTable *gControllers;                   // weak set of transcript controllers we have seen
@@ -551,6 +597,100 @@ static BOOL RXTResolveRow(CKTranscriptBubbleData *data, NSInteger row, BOOL want
     return YES;
 }
 
+#pragma mark - Edits (DESIGN 4.5)
+
+static BOOL RXTIsTextPart(id part)
+{
+    static Class textClass;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        textClass = NSClassFromString(@"CKTextMessagePart");
+    });
+    return part && textClass && [part isKindOfClass:textClass];
+}
+
+// -[CKTextMessagePart text] hook: the part's pin, or nil (=> %orig). O(1): one counter read before any lookup.
+id RXTranscriptEditedText(id part)
+{
+    if (gEditPins <= 0 || !part || !pthread_main_np()) {
+        return nil;
+    }
+    RXTEditPin *pin = objc_getAssociatedObject(part, &kRXTEditPinKey);
+    return pin ? pin->_text : nil;
+}
+
+// Append hook, before %orig: the text ChatKit is about to read, measure and save for this message's rows. Each
+// text part gets its shown edit pinned (same pin kept while the text is unchanged) or loses a stale pin; the
+// bubble data remembers which parts its appends pinned (the "Edited" marker follows exactly that).
+void RXTranscriptPinEdits(CKTranscriptBubbleData *data, id message, BOOL active)
+{
+    if (!message || !RXTMain()) {
+        return;
+    }
+    NSDictionary *edits = nil;
+    if (active && RXGetPrefs().edits) {
+        NSString *guid = RXTGUIDOf(message);
+        NSString *chatKey = guid ? RXChatKeyForMessage(message) : nil;
+        RXStore *store = chatKey ? [RXStore storeForChatKey:chatKey create:NO] : nil;
+        edits = [store editsForGUID:guid];
+    }
+    if (![edits count] && gEditPins <= 0) {
+        return;                                // nothing shown, nothing pinned anywhere: the common case
+    }
+    CKIMMessage *msg = message;
+    NSArray *parts = [msg respondsToSelector:@selector(parts)] ? [msg parts] : nil;
+    if (![parts isKindOfClass:[NSArray class]]) {
+        return;
+    }
+    NSHashTable *applied = data ? objc_getAssociatedObject(data, &kRXTEditedPartsKey) : nil;
+    NSInteger index = 0;
+    for (id part in parts) {
+        NSString *text = [edits count] ? [edits objectForKey:[NSNumber numberWithInteger:index]] : nil;
+        index++;
+        if (![text isKindOfClass:[NSString class]] || ![text length] || !RXTIsTextPart(part)) {
+            text = nil;
+        }
+        RXTEditPin *pin = (gEditPins > 0 || text) ? objc_getAssociatedObject(part, &kRXTEditPinKey) : nil;
+        if (!text) {
+            if (pin) {
+                objc_setAssociatedObject(part, &kRXTEditPinKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+            }
+            [applied removeObject:part];
+            continue;
+        }
+        if (!pin || ![[pin->_text string] isEqualToString:text]) {
+            pin = [[RXTEditPin alloc] initWithText:text];
+            objc_setAssociatedObject(part, &kRXTEditPinKey, pin, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        }
+        if (data) {
+            if (!applied) {
+                applied = [[NSHashTable alloc] initWithOptions:(NSPointerFunctionsStrongMemory |
+                                                                NSPointerFunctionsObjectPointerPersonality)
+                                                      capacity:4];
+                objc_setAssociatedObject(data, &kRXTEditedPartsKey, applied, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+            }
+            [applied addObject:part];
+        }
+        if (gBuildDepth > 0) {
+            gBuildPinned++;
+        }
+    }
+}
+
+// The row's bubble shows an edited text from THIS bubble data's appends (not merely a pending live edit).
+static BOOL RXTRowShowsEdit(CKTranscriptBubbleData *data, NSInteger row)
+{
+    if (!data || gEditPins <= 0 || row < 0 || row >= (NSInteger)[data count]) {
+        return NO;
+    }
+    NSHashTable *applied = objc_getAssociatedObject(data, &kRXTEditedPartsKey);
+    if (![applied count]) {
+        return NO;
+    }
+    CKMessagePart *part = [data partAtIndex:(int)row];
+    return part && [applied containsObject:part] && objc_getAssociatedObject(part, &kRXTEditPinKey) != nil;
+}
+
 static UIImage *RXTPartThumbnail(CKTranscriptBubbleData *data, NSInteger row)
 {
     if (!data || row == NSNotFound || row < 0 || row >= (NSInteger)[data count]) {
@@ -672,6 +812,21 @@ static void RXTEnsureOrder(UIView *host, UIView *balloon, UIView *quote, UIView 
     RXTPlaceAbove(host, badge, top);
 }
 
+// The "Edited" marker sits BELOW the balloon (a received bubble slides over it on a reply swipe). Moved only when
+// it is above the balloon or not in `host` yet (the swipe arrow may sit between them).
+static void RXTPlaceBelow(UIView *host, UIView *view, UIView *balloon)
+{
+    if (!host || !view || !balloon || balloon.superview != host) {
+        return;
+    }
+    NSArray *subviews = host.subviews;
+    NSUInteger balloonIndex = [subviews indexOfObjectIdenticalTo:balloon];
+    NSUInteger viewIndex = (view.superview == host) ? [subviews indexOfObjectIdenticalTo:view] : NSNotFound;
+    if (balloonIndex != NSNotFound && (viewIndex == NSNotFound || viewIndex > balloonIndex)) {
+        [host insertSubview:view belowSubview:balloon];
+    }
+}
+
 static void RXTFlashParent(CKTranscriptController *tc, NSString *guid, NSInteger partKey)
 {
     UITableView *table = RXTTableFor(tc);
@@ -741,8 +896,9 @@ static void RXTApplyCell(CKTranscriptController *tc, UITableView *table, UITable
     RXPrefs prefs = RXGetPrefs();
     BOOL wantBadge = prefs.enabled && prefs.badges;
     BOOL wantQuote = prefs.enabled && prefs.quotes;
+    BOOL wantEdit = prefs.enabled && prefs.edits;
     CKTranscriptBubbleData *data = nil;
-    if (tc && table && path && path.section == 0 && (wantBadge || wantQuote) && table == RXTTableFor(tc)) {
+    if (tc && table && path && path.section == 0 && (wantBadge || wantQuote || wantEdit) && table == RXTTableFor(tc)) {
         data = RXTDataFor(tc);
     }
     CKIMMessage *msg = nil;
@@ -753,11 +909,13 @@ static void RXTApplyCell(CKTranscriptController *tc, UITableView *table, UITable
     if (data) {
         RXTResolveRow(data, path.row, wantBadge, wantQuote, &msg, &guid, &partKey, &model, &link);
     }
+    BOOL edited = wantEdit && data && RXTRowShowsEdit(data, path.row);
 
     RXTCellInfo *info = objc_getAssociatedObject(cell, &kRXTCellInfoKey);
     RXReactionBalloonView *badge = objc_getAssociatedObject(cell, &kRXTBadgeViewKey);
     RXQuoteBalloonView *quote = objc_getAssociatedObject(cell, &kRXTQuoteViewKey);
-    if (!model && !link && !badge && !quote) {
+    RXEditedMarkerView *marker = objc_getAssociatedObject(cell, &kRXTEditedViewKey);
+    if (!model && !link && !edited && !badge && !quote && !marker) {
         if (info) {
             objc_setAssociatedObject(cell, &kRXTCellInfoKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         }
@@ -856,6 +1014,22 @@ static void RXTApplyCell(CKTranscriptController *tc, UITableView *table, UITable
         quote.hidden = YES;
         info.hasQuote = NO;
     }
+
+    // "Edited" marker (DESIGN 4.5): only while this row's bubble shows the text pinned by the current bubble
+    // data, never for a live edit still waiting for its reload. Shown/framed by RXTranscriptLayoutCell.
+    if (edited) {
+        if (!marker) {
+            marker = [[RXEditedMarkerView alloc] initWithFrame:CGRectZero];
+            objc_setAssociatedObject(cell, &kRXTEditedViewKey, marker, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        }
+        if (marker.wallpaper != wallpaper) {
+            marker.wallpaper = wallpaper;
+        }
+        info.hasEdited = YES;
+    } else if (marker) {
+        marker.hidden = YES;
+        info.hasEdited = NO;
+    }
     RXTranscriptLayoutCell(cell);
 }
 
@@ -863,6 +1037,7 @@ static void RXTClearCellViews(UITableViewCell *cell)
 {
     RXReactionBalloonView *badge = objc_getAssociatedObject(cell, &kRXTBadgeViewKey);
     RXQuoteBalloonView *quote = objc_getAssociatedObject(cell, &kRXTQuoteViewKey);
+    RXEditedMarkerView *marker = objc_getAssociatedObject(cell, &kRXTEditedViewKey);
     RXTCellInfo *info = objc_getAssociatedObject(cell, &kRXTCellInfoKey);
     if (badge) {
         badge.onTap = nil;
@@ -875,9 +1050,13 @@ static void RXTClearCellViews(UITableViewCell *cell)
         quote.thumbnail = nil;
         quote.hidden = YES;
     }
+    if (marker) {
+        marker.hidden = YES;
+    }
     if (info) {
         info.hasBadge = NO;
         info.hasQuote = NO;
+        info.hasEdited = NO;
         info.badgeOutUntil = 0;
     }
 }
@@ -942,7 +1121,8 @@ void RXTranscriptLayoutCell(UITableViewCell *cell)
     }
     RXReactionBalloonView *badge = objc_getAssociatedObject(cell, &kRXTBadgeViewKey);
     RXQuoteBalloonView *quote = objc_getAssociatedObject(cell, &kRXTQuoteViewKey);
-    if (!badge && !quote) {
+    RXEditedMarkerView *marker = objc_getAssociatedObject(cell, &kRXTEditedViewKey);
+    if (!badge && !quote && !marker) {
         return;
     }
     RXTCellInfo *info = objc_getAssociatedObject(cell, &kRXTCellInfoKey);
@@ -950,6 +1130,7 @@ void RXTranscriptLayoutCell(UITableViewCell *cell)
     UIView *host = balloon.superview;
     if (balloon && host) {
         RXTEnsureOrder(host, balloon, quote, badge);
+        RXTPlaceBelow(host, marker, balloon);
     }
     // Edit mode centres the balloons, a hidden balloon is mid-throw or mid-preview: show nothing then.
     BOOL usable = info && balloon && host && !balloon.hidden && !cell.isEditing;
@@ -981,6 +1162,17 @@ void RXTranscriptLayoutCell(UITableViewCell *cell)
                                      inBounds:bounds];
         } else {
             quote.hidden = YES;
+        }
+    }
+    if (marker) {
+        // Beside the bottom outer corner, clear of the badge art (after the badge's own layout above).
+        BOOL show = usable && info.hasEdited;
+        if (show) {
+            CGRect avoid = (badge && info.hasBadge && !badge.hidden) ? [badge artRectInSuperview] : CGRectNull;
+            show = [marker layoutForBalloonFrame:balloonFrame outgoing:outgoing inBounds:bounds avoiding:avoid];
+        }
+        if (marker.hidden == show) {
+            marker.hidden = !show;
         }
     }
 }
@@ -1436,6 +1628,13 @@ static void RXTRestyleNow(CKTranscriptController *tc)
             }
             [quote setNeedsDisplay];
         }
+        RXEditedMarkerView *marker = objc_getAssociatedObject(cell, &kRXTEditedViewKey);
+        if (marker) {
+            if (marker.wallpaper != wallpaper) {
+                marker.wallpaper = wallpaper;
+            }
+            [marker setNeedsDisplay];
+        }
     }
 }
 
@@ -1466,7 +1665,7 @@ static void RXTRestartBuildStore(void)
         return;
     }
     RXPrefs prefs = RXGetPrefs();
-    BOOL wanted = prefs.enabled && (prefs.badges || prefs.quotes);
+    BOOL wanted = prefs.enabled && (prefs.badges || prefs.quotes || prefs.edits);
     RXStore *store = [RXStore storeForChatKey:gBuildChatKey create:wanted];
     [store restartBuild];
 }
@@ -1488,6 +1687,7 @@ void RXTranscriptBuildBegin(CKTranscriptController *tc)
     gBuildAppends = 0;
     gBuildHidden = 0;
     gBuildRetargets = 0;
+    gBuildPinned = 0;
     gBuildReadTarget = nil;
     if (alive) {
         RXTRegister(tc);
@@ -1516,9 +1716,9 @@ void RXTranscriptBuildEnd(CKTranscriptController *tc)
     if (rebuilt) {
         RXTTagData(data, controller);
     }
-    RXLog(@"build: rebuilt %d, %lu messages, %lu hidden, %lu status retargets, %d rows", (int)rebuilt,
+    RXLog(@"build: rebuilt %d, %lu messages, %lu hidden, %lu status retargets, %lu edited, %d rows", (int)rebuilt,
           (unsigned long)gBuildAppends, (unsigned long)gBuildHidden, (unsigned long)gBuildRetargets,
-          data ? [data count] : 0);
+          (unsigned long)gBuildPinned, data ? [data count] : 0);
     gBuildTC = nil;
     gBuildChatKey = nil;
     gBuildOldData = nil;
@@ -1529,10 +1729,13 @@ void RXTranscriptBuildEnd(CKTranscriptController *tc)
     }
 
     BOOL reload = NO;
+    BOOL editsChanged = NO;
     RXStore *store = chatKey ? [RXStore storeForChatKey:chatKey create:NO] : nil;
     if (store) {
         [store takeDirtyGUIDs];            // the table is rebuilt from scratch right after a build
         reload = [store takeNeedsReload];  // a late match inside the build
+        [store finishBuild];               // drops shown edits whose edit row is gone
+        editsChanged = [store takeEditsChanged];
     }
     RXTState *state = RXTStateFor(controller, YES);
     if (!state) {
@@ -1543,6 +1746,18 @@ void RXTranscriptBuildEnd(CKTranscriptController *tc)
     state.editingRefresh = NO;
     [state.dirtyGUIDs removeAllObjects];
     state.chatKey = nil;
+    if (editsChanged) {
+        // An edit was found (or dropped) for a bubble appended earlier in this build, whose text and size
+        // ChatKit already saved: the hook builds once more inside the same call, before ChatKit's reloadData,
+        // so the old text never reaches the table. Still changing after that one re-run: one gated reload.
+        if (!gBuildInRerun) {
+            gBuildWantsRerun = YES;
+            RXLog(@"build: edits changed, re-running once");
+        } else {
+            RXLog(@"build: edits still changing after the re-run; gated reload");
+            reload = YES;
+        }
+    }
     if (!reload) {
         state.chainedReloads = 0;
         return;
@@ -1558,9 +1773,33 @@ void RXTranscriptBuildEnd(CKTranscriptController *tc)
     RXTSchedule(controller, YES);
 }
 
+// The _computeBubbleData: hook, right after RXTranscriptBuildEnd: YES at most once per hook call (the re-run's
+// own BuildEnd can only ask for a gated reload). ChatKit's _computeBubbleData:YES always makes a NEW bubble data
+// and its side effects repeat harmlessly (setSuspended: no-ops when unchanged, clearQueue, _lastMessage).
+BOOL RXTranscriptTakeBuildRerun(void)
+{
+    BOOL rerun = gBuildWantsRerun && !gBuildInRerun && gBuildDepth == 0 && RXTMain();
+    gBuildWantsRerun = NO;
+    if (rerun) {
+        gBuildInRerun = YES;
+    }
+    return rerun;
+}
+
+void RXTranscriptBuildRerunDone(void)
+{
+    gBuildInRerun = NO;
+}
+
 void RXTranscriptBubbleDataCleared(CKTranscriptBubbleData *data)
 {
-    if (!data || !RXTMain() || gBuildDepth > 0) {
+    if (!data || !RXTMain()) {
+        return;
+    }
+    if (objc_getAssociatedObject(data, &kRXTEditedPartsKey)) {
+        objc_setAssociatedObject(data, &kRXTEditedPartsKey, nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);   // no rows left
+    }
+    if (gBuildDepth > 0) {
         return;                            // inside a build the build context owns the restart
     }
     RXTBubbleTag *tag = objc_getAssociatedObject(data, &kRXTTagKey);
@@ -1618,7 +1857,9 @@ BOOL RXTranscriptShouldHideAppend(CKTranscriptBubbleData *data, id message)
             RXTDeferQuote(guid, tc);
         }
     }
-    if (!(prefs.enabled && prefs.badges)) {
+    BOOL badges = prefs.enabled && prefs.badges;
+    BOOL edits = prefs.enabled && prefs.edits;
+    if (!badges && !edits) {
         return NO;
     }
     RXStore *store = [RXStore storeForChatKey:chatKey create:YES];
@@ -1629,7 +1870,7 @@ BOOL RXTranscriptShouldHideAppend(CKTranscriptBubbleData *data, id message)
     if (!inBuild && [store isKnownGUID:guid]) {
         hide = [store isHiddenGUID:guid];   // re-append into the same instance: same answer, no double ingest
     } else {
-        hide = [store ingestMessage:(CKIMMessage *)message allowHide:!ownSend];
+        hide = [store ingestMessage:(CKIMMessage *)message allowHide:!ownSend badges:badges edits:edits];
     }
     if (ownSend) {
         hide = NO;                          // the send throw needs its rows
@@ -1640,7 +1881,14 @@ BOOL RXTranscriptShouldHideAppend(CKTranscriptBubbleData *data, id message)
             gBuildHidden++;
         }
     } else if (tc) {
-        RXTQueueAttempt(tc);                // picks up dirty targets / late matches through the gate
+        if ([store takeEditsChanged]) {
+            // A live edit: its bubble's text and size were saved at append, so only a rebuild shows it (the
+            // gated reload), never the refresh. Its own row is already hidden by this append.
+            RXLog(@"edit %@ live; reload queued", RXGUIDTail(guid));
+            RXTSchedule(tc, YES);
+        } else {
+            RXTQueueAttempt(tc);            // picks up dirty targets / late matches through the gate
+        }
     }
     return hide;
 }
@@ -1651,8 +1899,8 @@ BOOL RXTranscriptIsHiddenMessage(id message)
         return NO;
     }
     RXPrefs prefs = RXGetPrefs();
-    if (!(prefs.enabled && prefs.badges)) {
-        return NO;
+    if (!(prefs.enabled && (prefs.badges || prefs.edits))) {
+        return NO;                         // same condition as the append filter (Show Reactions or Show Edits)
     }
     NSString *guid = RXTGUIDOf(message);
     NSString *chatKey = guid ? RXChatKeyForMessage(message) : nil;

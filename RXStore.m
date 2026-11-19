@@ -8,7 +8,8 @@
 //  * Records are kept in APPEND order for one bubble-data build. Dates (calendarDate) are only used for
 //    R5's 60 s skew window, the 15 min edit-alias window and the 2 s own-number duplicate window.
 //  * "Candidates" are records that are neither reactions nor edit rows (R5 6.1). A record whose parse
-//    target is RXTargetUnknown ("Loved it!", an empty quote, app balloons) is an ordinary message.
+//    target is RXTargetUnknown ("Loved it!", an empty quote, app balloons) is an ordinary message, and so is
+//    a name-first edit row that was not applied (it may be an ordinary sentence, DESIGN 4.5).
 //  * Matching is stage-major (R5 6.3): every candidate in the 500-candidate window is tried for stage 1
 //    before any is tried for stage 2, and within a stage the newest candidate wins. Stages 1-4 and 6 use
 //    hash indexes, stage 5 (truncated prefix) and attachments scan backwards.
@@ -20,6 +21,9 @@
 //  * The matched list also keeps, for my own reactions only, the target GUID/part the reaction was
 //    applied to ("g"/"k"), so a pick on an older duplicate text ("ok", "lol") keeps its bubble across
 //    rebuilds instead of jumping to the newest identical text.
+//  * Edits (2.2.0, DESIGN 4.5): an applied edit row is hidden and its target's new text goes into the
+//    shown-edit map (target GUID -> { partKey: text }), which survives builds; the transcript pins it on
+//    the part at append. The store itself reads every part's RAW text (the _text ivar), never the pin.
 //
 // Logs: counts, kinds, lengths and GUID tails only (DESIGN 2). Chats are logged as a 16-bit hash.
 
@@ -29,6 +33,12 @@
 @interface CKMediaObject (RXStoreLocal)
 - (NSString *)mimeType;
 - (NSString *)exportedFilename;
+@end
+
+// The Load Earlier flag (CK@0x33f0ee50 _refreshMoreToLoadFlag: limitToLoad <= messages count); NO = the whole
+// history is loaded. Edit fallback coverage only (DESIGN 4.5).
+@interface CKConversation (RXStoreLocal)
+- (BOOL)moreMessagesToLoad;
 @end
 
 #pragma mark - Tunables
@@ -51,6 +61,17 @@
 #define RXST_MATCHED_PER_CHAT   1000      // matched list: same rules, roomier caps (one entry per reaction)
 #define RXST_MATCHED_TOTAL      8000
 #define RXST_WRITE_DELAY        1.0       // coalesced writes (DESIGN 4.3)
+#define RXST_EDIT_MIN_SIM       0.5       // shown edit: a candidate needs this similarity to win (DESIGN 4.5)
+#define RXST_EDIT_STRONG_SIM    0.8       // name-first row whose name is not the sender's: close rewrites only
+#define RXST_EDIT_INSERT_SIM    0.6       // similarity floor for a pure insert/delete (shorter text >= 4 code points)
+#define RXST_EDIT_MAX           5         // edits per message (Apple's limit)
+#define RXST_EDIT_LEV_MAX       64        // full Levenshtein on the stack up to this many differing code points
+#define RXST_EDIT_LEV_BAND      64        // longer middles: banded Levenshtein, first band (doubled while needed)
+#define RXST_EDIT_LEV_BAND_MAX  256       // band cap: time O(n * (2k + 1)), memory O(n); past it = all differ
+#define RXST_EDIT_CP_STACK      512       // both texts' code points on the stack up to this, else heap
+#define RXST_EDIT_CANDS         32        // candidates scored per edit row
+#define RXST_EDITS_PER_CHAT     200       // shown edits kept per chat (oldest dropped)
+#define RXST_LOCAL_SENDS        64        // rows typed on this iPhone remembered (never treated as edits)
 
 #pragma mark - Small helpers
 
@@ -385,6 +406,8 @@ RXTarget RXTargetForPart(CKMessagePart *part) {
     return kind == RXTargetUnknown ? RXTargetAnyAttachment : kind;
 }
 
+// The text the bubble shows: -text goes through the edit hook, so an edited part answers its new text (what
+// RXSend / RXReply / RXPicker quote). The store never calls this (RXStRawTextForPart).
 NSString *RXTextForPart(CKMessagePart *part) {
     if (!part) {
         return nil;
@@ -397,6 +420,262 @@ NSString *RXTextForPart(CKMessagePart *part) {
         return nil;
     }
     return RXStStripFFFC(s);
+}
+
+// CKTextMessagePart and its _text ivar (@"NSAttributedString", CK.dump L1085), resolved once; NULL when absent.
+static Class gRXStTextClass;
+static Ivar gRXStTextIvar;
+
+static void RXStTextIvarSetup(void) {
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        gRXStTextClass = NSClassFromString(@"CKTextMessagePart");
+        Ivar iv = gRXStTextClass ? class_getInstanceVariable(gRXStTextClass, "_text") : NULL;
+        const char *type = iv ? ivar_getTypeEncoding(iv) : NULL;
+        gRXStTextIvar = (type && type[0] == '@') ? iv : NULL;
+        if (!gRXStTextIvar) {
+            RXLogOnce(@"store.textivar", @"store: CKTextMessagePart _text ivar missing; Show Edits unavailable");
+        }
+    });
+}
+
+// Show Edits needs the raw text: without the ivar no edit is ever applied, so nothing is pinned.
+static BOOL RXStRawTextAvailable(void) {
+    RXStTextIvarSetup();
+    return gRXStTextIvar != NULL;
+}
+
+// A text part's stored text exactly as the stock getter returns it (CK@0x31480 just loads _text), read
+// directly so the edit hook's pin never reaches the store (DESIGN 4.5). FFFC removed; nil for other parts.
+static NSString *RXStRawTextForPart(CKMessagePart *part) {
+    if (!part) {
+        return nil;
+    }
+    if ([part respondsToSelector:@selector(type)] && [part type] != 0) {
+        return nil;
+    }
+    RXStTextIvarSetup();
+    id value = nil;
+    if (gRXStTextIvar && gRXStTextClass && [part isKindOfClass:gRXStTextClass]) {
+        value = object_getIvar(part, gRXStTextIvar);
+    } else {
+        value = RXStObject(part, @selector(text));     // no pins exist then (RXStRawTextAvailable)
+    }
+    NSString *str = nil;
+    if ([value isKindOfClass:[NSAttributedString class]]) {
+        str = [[(NSAttributedString *)value string] copy];
+    } else if ([value isKindOfClass:[NSString class]]) {
+        str = [(NSString *)value copy];
+    }
+    return str ? RXStStripFFFC(str) : nil;
+}
+
+// s as code points (a surrogate pair is one value, a lone half stays as is); out holds >= [s length] entries.
+static NSUInteger RXStCodePoints(NSString *s, uint32_t *out) {
+    if (![s length]) {
+        return 0;
+    }
+    CFStringRef cf = (__bridge CFStringRef)s;
+    CFIndex n = CFStringGetLength(cf);
+    CFStringInlineBuffer buf;
+    CFStringInitInlineBuffer(cf, &buf, CFRangeMake(0, n));
+    NSUInteger k = 0;
+    for (CFIndex i = 0; i < n; i++) {
+        UniChar c = CFStringGetCharacterFromInlineBuffer(&buf, i);
+        if (CFStringIsSurrogateHighCharacter(c) && i + 1 < n) {
+            UniChar d = CFStringGetCharacterFromInlineBuffer(&buf, i + 1);
+            if (CFStringIsSurrogateLowCharacter(d)) {
+                out[k++] = (uint32_t)CFStringGetLongCharacterForSurrogatePair(c, d);
+                i++;
+                continue;
+            }
+        }
+        out[k++] = c;
+    }
+    return k;
+}
+
+// Banded Levenshtein for long middles (two fixes far apart): exact up to k edits, k + 1 beyond that (also when
+// the lengths differ by more than k). Cells outside |i - j| <= k count as k + 1; stops early once a whole row is
+// past k. Allocates only one row; NSNotFound if out of memory.
+static NSUInteger RXStLevBanded(const uint32_t *ca, NSUInteger ma, const uint32_t *cb, NSUInteger mb, NSUInteger k) {
+    NSUInteger beyond = k + 1;
+    if ((ma > mb ? ma - mb : mb - ma) > k) {
+        return beyond;                                // the band misses the corner (and row[jlo - 1] would overrun)
+    }
+    NSUInteger *row = malloc((mb + 1) * sizeof(NSUInteger));
+    NSUInteger dist = NSNotFound;
+    if (row) {
+        for (NSUInteger j = 0; j <= mb; j++) {
+            row[j] = j <= k ? j : beyond;
+        }
+        dist = beyond;
+        BOOL done = NO;
+        for (NSUInteger i = 1; i <= ma && !done; i++) {
+            NSUInteger jlo = i > k ? i - k : 1;
+            NSUInteger jhi = MIN(mb, i + k);
+            NSUInteger diag = row[jlo - 1];
+            row[jlo - 1] = (jlo == 1) ? MIN(i, beyond) : beyond;
+            NSUInteger rowMin = row[jlo - 1];
+            for (NSUInteger j = jlo; j <= jhi; j++) {
+                NSUInteger up = row[j];
+                NSUInteger best = MIN(up + 1, row[j - 1] + 1);
+                best = MIN(best, diag + (ca[i - 1] == cb[j - 1] ? 0 : 1));
+                row[j] = MIN(best, beyond);
+                rowMin = MIN(rowMin, row[j]);
+                diag = up;
+            }
+            if (rowMin > k) {
+                done = YES;                           // every path is already past k
+            }
+        }
+        if (!done) {
+            dist = row[mb];
+        }
+    }
+    free(row);
+    return dist;
+}
+
+// Edit similarity (DESIGN 4.5) on lowercased N(x) texts, in code points (a surrogate pair is one symbol, so two
+// different emoji share nothing): the shared start and end are stripped, the middles compared with an exact
+// Levenshtein (stack) when both are <= RXST_EDIT_LEV_MAX, else a banded one that starts at RXST_EDIT_LEV_BAND and
+// doubles up to k = the most edits that can still score RXST_EDIT_MIN_SIM, capped at RXST_EDIT_LEV_BAND_MAX (a
+// middle past k counts as entirely different); score = 1 - distance / longer length. A pure insert or delete
+// (one text is the other's start plus end, the shorter >= 4) scores at least RXST_EDIT_INSERT_SIM.
+static double RXStEditSim(NSString *a, NSString *b) {
+    NSUInteger ua = [a length];
+    NSUInteger ub = [b length];
+    if (ua + ub == 0) {
+        return 1.0;
+    }
+    uint32_t stackBuf[RXST_EDIT_CP_STACK];
+    uint32_t *buf = (ua + ub <= RXST_EDIT_CP_STACK) ? stackBuf : malloc((ua + ub) * sizeof(uint32_t));
+    if (!buf) {
+        return 0.0;
+    }
+    const uint32_t *ca = buf;
+    const uint32_t *cb = buf + ua;
+    NSUInteger la = RXStCodePoints(a, buf);
+    NSUInteger lb = RXStCodePoints(b, buf + ua);
+    NSUInteger longer = MAX(la, lb);
+    NSUInteger shorter = MIN(la, lb);
+    NSUInteger pre = 0;
+    while (pre < shorter && ca[pre] == cb[pre]) {
+        pre++;
+    }
+    NSUInteger suf = 0;
+    while (suf < shorter - pre && ca[la - 1 - suf] == cb[lb - 1 - suf]) {
+        suf++;
+    }
+    NSUInteger ma = la - pre - suf;
+    NSUInteger mb = lb - pre - suf;
+    const uint32_t *xa = ca + pre;
+    const uint32_t *xb = cb + pre;
+    NSUInteger dist = MAX(ma, mb);
+    if (ma > 0 && mb > 0 && dist <= RXST_EDIT_LEV_MAX) {
+        NSUInteger row[RXST_EDIT_LEV_MAX + 1];
+        for (NSUInteger j = 0; j <= mb; j++) {
+            row[j] = j;
+        }
+        for (NSUInteger i = 1; i <= ma; i++) {
+            NSUInteger diag = row[0];
+            row[0] = i;
+            for (NSUInteger j = 1; j <= mb; j++) {
+                NSUInteger up = row[j];
+                NSUInteger best = MIN(up + 1, row[j - 1] + 1);
+                best = MIN(best, diag + (xa[i - 1] == xb[j - 1] ? 0 : 1));
+                row[j] = best;
+                diag = up;
+            }
+        }
+        dist = row[mb];
+    } else if (ma > 0 && mb > 0) {
+        // Only distances that can still score RXST_EDIT_MIN_SIM need to be exact (below it only the newest
+        // candidate can win, whatever its score). A small band first: a result within the band is exact.
+        NSUInteger k = (NSUInteger)floor((1.0 - RXST_EDIT_MIN_SIM) * (double)longer);
+        k = MIN(k, (NSUInteger)RXST_EDIT_LEV_BAND_MAX);
+        NSUInteger gap = ma > mb ? ma - mb : mb - ma;
+        if (gap <= k) {
+            NSUInteger kk = MIN(k, MAX(gap, (NSUInteger)RXST_EDIT_LEV_BAND));   // never below the gap
+            for (;;) {
+                NSUInteger banded = RXStLevBanded(xa, ma, xb, mb, kk);
+                if (banded == NSNotFound) {
+                    break;                            // out of memory: dist stays MAX(ma, mb)
+                }
+                if (banded <= kk) {
+                    dist = banded;                    // exact
+                    break;
+                }
+                if (kk >= k) {
+                    break;                            // past k: never used (a capped k + 1 could score >= 0.5)
+                }
+                kk = MIN(k, kk * 2);
+            }
+        }
+    }
+    double sim = 1.0 - (double)dist / (double)longer;
+    if (shorter >= 4 && pre + suf >= shorter && sim < RXST_EDIT_INSERT_SIM) {
+        sim = RXST_EDIT_INSERT_SIM;
+    }
+    if (buf != stackBuf) {
+        free(buf);
+    }
+    return sim;
+}
+
+// A name-first edit row's name vs the sender's first name: equal, or the first name plus exactly one more word
+// ("Taylor Brooks" / "Taylor"; never "Will you check what I" / "Will"), ignoring case and accents. Only the
+// flag is kept, never a name.
+static BOOL RXStNameMatches(NSString *rowName, NSString *firstName) {
+    NSString *a = RXStTrim(RXStNorm(rowName));
+    NSString *b = RXStTrim(RXStNorm(firstName));
+    NSUInteger lb = [b length];
+    if (![a length] || !lb || [a length] < lb) {
+        return NO;
+    }
+    NSStringCompareOptions opts = NSCaseInsensitiveSearch | NSDiacriticInsensitiveSearch;
+    if ([a compare:b options:opts range:NSMakeRange(0, lb)] != NSOrderedSame) {
+        return NO;
+    }
+    if ([a length] == lb) {
+        return YES;
+    }
+    NSCharacterSet *ws = [NSCharacterSet whitespaceCharacterSet];
+    if (![ws characterIsMember:[a characterAtIndex:lb]]) {
+        return NO;
+    }
+    NSString *rest = [a substringFromIndex:lb + 1];
+    return [rest length] && [rest rangeOfCharacterFromSet:ws].location == NSNotFound;
+}
+
+// Store vectors for the parser self-test (S1-S6, 2.2.0): edit similarity and the name check. Fake names only.
+void RXStoreSelfTest(NSUInteger *pass, NSUInteger *total, NSMutableArray *fails) {
+    NSString *typo = @"hey so i was thinkng we could go to the beach on saturday and then get dinner after, let me knw";
+    NSString *fixed = @"hey so i was thinking we could go to the beach on saturday and then get dinner after, let me know";
+    NSString *other = @"no worries at all, we can just pick a different weekend once everyone has looked at their plans";
+    NSMutableString *body = [NSMutableString string];
+    while ([body length] < 2100) {
+        [body appendString:@" the quick brown fox jumps over the lazy dog"];
+    }
+    NSString *cry = [NSString stringWithFormat:@"%C%C", (unichar)0xD83D, (unichar)0xDE2D];    // U+1F62D
+    NSString *joy = [NSString stringWithFormat:@"%C%C", (unichar)0xD83D, (unichar)0xDE02];    // U+1F602
+    BOOL ok[6];
+    ok[0] = RXStEditSim(typo, fixed) >= 0.9;                       // two fixes ~80 units apart (distance 2)
+    ok[1] = RXStEditSim(typo, other) < RXST_EDIT_MIN_SIM;          // a long unrelated text stays below 0.5
+    ok[2] = RXStNameMatches(@"Taylor Brooks", @"Taylor");
+    ok[3] = !RXStNameMatches(@"Taylor will check what I", @"Taylor");
+    ok[4] = RXStEditSim([@"helo" stringByAppendingFormat:@"%@ byee", body],
+                        [@"hello" stringByAppendingFormat:@"%@ bye", body]) >= 0.9;   // > 2,100 apart (capped band)
+    ok[5] = RXStEditSim(cry, joy) < RXST_EDIT_MIN_SIM;             // two emoji: one code point each, no shared half
+    for (int i = 0; i < 6; i++) {
+        (*total)++;
+        if (ok[i]) {
+            (*pass)++;
+        } else {
+            [fails addObject:[NSString stringWithFormat:@"S%d", i + 1]];
+        }
+    }
 }
 
 #pragma mark - Public model classes
@@ -574,6 +853,10 @@ static NSDictionary *RXStSanitize(RXStFileKind kind, id raw) {
             if ([k isKindOfClass:[NSNumber class]]) {
                 [out setObject:k forKey:@"k"];
             }
+        }
+        id eg = [d objectForKey:@"eg"];                 // edit rows: the bubble the edit went to (DESIGN 4.5)
+        if ([eg isKindOfClass:[NSString class]] && [(NSString *)eg length]) {
+            [out setObject:eg forKey:@"eg"];
         }
     }
     return [out copy];
@@ -895,6 +1178,9 @@ static RXReplyLink *RXStLinkFromEntry(NSDictionary *e) {
 @property (nonatomic, copy) NSString *norm;
 @property (nonatomic, copy) NSString *trim;
 @property (nonatomic, copy) NSString *coll;
+@property (nonatomic, assign) BOOL fromPart;          // a real text part (NO: the _rawPreviewText fallback)
+@property (nonatomic, copy) NSString *cur;            // N(current text) after applied edits; nil = unedited
+@property (nonatomic, copy) NSString *shown;          // the latest edit's text as received (FFFC removed)
 @end
 
 @implementation RXStSeg
@@ -940,6 +1226,12 @@ static RXReplyLink *RXStLinkFromEntry(NSDictionary *e) {
 @property (nonatomic, assign) NSInteger targetPart;
 @property (nonatomic, copy) NSString *hintGUID;       // my pick (optimistic entry or matched list "g")
 @property (nonatomic, assign) NSInteger hintPart;
+@property (nonatomic, assign) NSInteger editCount;    // candidates: edits applied (<= RXST_EDIT_MAX)
+@property (nonatomic, copy) NSString *editRule;       // candidates: how the last edit chose it (log only)
+@property (nonatomic, assign) double editSim;         // candidates: that edit's similarity (log only)
+@property (nonatomic, assign) NSUInteger editCands;   // candidates: candidates scored for that edit (log only)
+@property (nonatomic, assign) BOOL editNameMatch;     // name-first edit rows: name == sender's first name
+@property (nonatomic, assign) BOOL editApplied;       // edit rows: applied to a loaded target (=> hidden)
 @end
 
 @implementation RXStRecord
@@ -1016,6 +1308,8 @@ typedef struct {
     NSUInteger hidden;
     NSUInteger pending;
     NSUInteger edits;
+    NSUInteger editsApplied;
+    NSUInteger editsKept;
     NSUInteger failed;
 } RXStStats;
 
@@ -1023,9 +1317,20 @@ typedef struct {
 
 @interface RXStore ()
 - (id)initWithChatKey:(NSString *)chatKey;
+- (NSUInteger)clearEdits;
 @end
 
 static NSMutableArray *gRXStores;     // MRU first
+
+void RXStoreClearEdits(void) {
+    NSUInteger n = 0;
+    for (RXStore *store in gRXStores) {
+        n += [store clearEdits];
+    }
+    if (n) {
+        RXLog(@"edits: cleared %lu (prefs)", (unsigned long)n);
+    }
+}
 
 @implementation RXStore {
     // Per build (reset by -restartBuild)
@@ -1038,6 +1343,10 @@ static NSMutableArray *gRXStores;     // MRU first
     NSMutableDictionary *_idxAlias;
     NSMutableDictionary *_idxAliasTrim;
     NSMutableDictionary *_idxColl;
+    NSMutableDictionary *_idxEdited;  // applied edits: N(new text) -> the target part that shows it
+    NSMutableDictionary *_idxEditedTrim;
+    NSTimeInterval _buildFirstT;      // oldest dated row ingested this build (edit fallback coverage)
+    BOOL _buildHasFirstT;
     NSMutableDictionary *_targets;    // target guid -> RXStTarget
     NSMutableArray *_pending;         // list-hidden reactions without a target yet
     NSMutableArray *_unmatched;       // visible unmatched reactions (late-match candidates)
@@ -1053,6 +1362,14 @@ static NSMutableArray *gRXStores;     // MRU first
     NSMutableDictionary *_ownPairs;   // handle -> set of received-copy GUIDs
     NSMutableDictionary *_linkCache;  // replyGUID -> RXReplyLink
     NSInteger _clock;
+    NSMutableDictionary *_editShown;  // target GUID -> { @(partKey): text } (DESIGN 4.5; what the pins show)
+    NSMutableArray *_editOrder;       // _editShown keys, oldest first (cap)
+    NSDictionary *_editStart;         // _editShown at the last restart / take (change detection)
+    BOOL _editsTouched;               // _editShown written since then
+    NSMutableDictionary *_editKept;   // edit row GUID -> last "kept visible" reason (log once per change)
+    NSMutableDictionary *_editTarget; // edit row GUID -> target GUID it was applied to (never moves while gone)
+    NSMutableArray *_editTargetOrder; // _editTarget keys, oldest first (cap)
+    NSMutableArray *_localSends;      // GUIDs typed on this iPhone (own Send path): never edits
 }
 
 + (RXStore *)storeForChatKey:(NSString *)chatKey create:(BOOL)create {
@@ -1096,6 +1413,12 @@ static NSMutableArray *gRXStores;     // MRU first
         _ownHandles = [NSMutableSet set];
         _ownPairs = [NSMutableDictionary dictionary];
         _linkCache = [NSMutableDictionary dictionary];
+        _editShown = [NSMutableDictionary dictionary];
+        _editOrder = [NSMutableArray array];
+        _editKept = [NSMutableDictionary dictionary];
+        _editTarget = [NSMutableDictionary dictionary];
+        _editTargetOrder = [NSMutableArray array];
+        _localSends = [NSMutableArray array];
         [self resetBuildState];
     }
     return self;
@@ -1111,13 +1434,16 @@ static NSMutableArray *gRXStores;     // MRU first
     _idxAlias = [NSMutableDictionary dictionary];
     _idxAliasTrim = [NSMutableDictionary dictionary];
     _idxColl = [NSMutableDictionary dictionary];
+    _idxEdited = [NSMutableDictionary dictionary];
+    _idxEditedTrim = [NSMutableDictionary dictionary];
+    _buildFirstT = 0;
+    _buildHasFirstT = NO;
     _targets = [NSMutableDictionary dictionary];
     _pending = [NSMutableArray array];
     _unmatched = [NSMutableArray array];
     _recent = [NSMutableArray array];
     _oneToOne = -1;
-    RXStStats zero = {0, 0, 0, 0, 0, 0, 0, 0};
-    _stats = zero;
+    memset(&_stats, 0, sizeof(_stats));
 }
 
 - (void)logBuildSummary {
@@ -1125,10 +1451,11 @@ static NSMutableArray *gRXStores;     // MRU first
         return;
     }
     RXLog(@"store #%04lx build: %lu messages, %lu reactions, %lu matched (%lu late), %lu hidden (%lu pending), "
-          @"%lu edits, %lu failed, %lu targets, %lu own handles",
+          @"%lu edits (%lu applied, %lu kept), %lu failed, %lu targets, %lu own handles",
           RXStChatTag(_chatKey), (unsigned long)_stats.messages, (unsigned long)_stats.reactions,
           (unsigned long)_stats.matched, (unsigned long)_stats.late, (unsigned long)_stats.hidden,
-          (unsigned long)_stats.pending, (unsigned long)_stats.edits, (unsigned long)_stats.failed,
+          (unsigned long)_stats.pending, (unsigned long)_stats.edits, (unsigned long)_stats.editsApplied,
+          (unsigned long)_stats.editsKept, (unsigned long)_stats.failed,
           (unsigned long)[_targets count], (unsigned long)[_ownHandles count]);
 }
 
@@ -1137,6 +1464,8 @@ static NSMutableArray *gRXStores;     // MRU first
     [self resetBuildState];
     [_dirty removeAllObjects];     // the build reloads every row
     _needsReload = NO;             // a rebuild is the reload
+    _editStart = [_editShown copy];   // the pins this build's appends will use (never cleared here)
+    _editsTouched = NO;
 }
 
 #pragma mark Identity
@@ -1322,7 +1651,7 @@ static NSMutableArray *gRXStores;     // MRU first
             CKMessagePart *part = p;
             RXTarget kind = RXTargetForPart(part);
             if (kind == RXTargetText) {
-                NSString *s = RXTextForPart(part);
+                NSString *s = RXStRawTextForPart(part);    // raw, never the edited text pinned for display
                 if (!s) {
                     s = @"";
                 }
@@ -1330,6 +1659,7 @@ static NSMutableArray *gRXStores;     // MRU first
                 RXStSeg *seg = [[RXStSeg alloc] init];
                 seg.partKey = index;
                 seg.norm = RXStNorm(s);
+                seg.fromPart = YES;
                 [segs addObject:seg];
             } else if (kind != RXTargetUnknown) {
                 RXStAtt *att = [[RXStAtt alloc] init];
@@ -1402,6 +1732,9 @@ static NSMutableArray *gRXStores;     // MRU first
     if (r.isReaction && !fromMe) {
         NSString *name = sender ? RXFirstNameForEntity(sender) : nil;
         r.name = name ? name : @"";
+    }
+    if (r.isEdit && !fromMe && [r.event.editName length]) {
+        r.editNameMatch = RXStNameMatches(r.event.editName, sender ? RXFirstNameForEntity(sender) : nil);
     }
     return r;
 }
@@ -1515,6 +1848,10 @@ static NSMutableArray *gRXStores;     // MRU first
     if ((ref = [self pickFrom:RXStLookup(_idxFullTrim, r.qTrim) also:nil prefer:reactor])) {
         return ref;
     }
+    // 4a applied edit (the bubble and part that now show this text, DESIGN 4.5)
+    if ((ref = [self pickFrom:RXStLookup(_idxEdited, r.qNorm) also:RXStLookup(_idxEditedTrim, r.qTrim) prefer:reactor])) {
+        return ref;
+    }
     // 4 edit alias (stages 1-3 against the alias text)
     if ((ref = [self pickFrom:RXStLookup(_idxAlias, r.qNorm) also:RXStLookup(_idxAliasTrim, r.qTrim) prefer:reactor])) {
         return ref;
@@ -1603,7 +1940,7 @@ static NSMutableArray *gRXStores;     // MRU first
             if (seg.partKey != r.hintPart) {
                 continue;
             }
-            if ([seg.norm isEqualToString:q] || [seg.trim isEqualToString:qt] ||
+            if ([seg.norm isEqualToString:q] || [seg.trim isEqualToString:qt] || [seg.cur isEqualToString:q] ||
                 RXStHasLongerPrefix(seg.norm, r.qPrefix) ||
                 ([r.qColl length] && [seg.coll isEqualToString:r.qColl])) {
                 return seg.partKey;
@@ -1620,6 +1957,11 @@ static NSMutableArray *gRXStores;     // MRU first
     }
     if ([c.fullTrim isEqualToString:qt]) {                                        // 3
         return c.firstTextKey;
+    }
+    for (RXStSeg *seg in c.segs) {                                                // 4a applied edit
+        if (seg.cur && ([seg.cur isEqualToString:q] || [RXStTrim(seg.cur) isEqualToString:qt])) {
+            return seg.partKey;
+        }
     }
     for (NSString *alias in c.aliases) {                                          // 4
         if ([alias isEqualToString:q] || [RXStTrim(alias) isEqualToString:qt]) {
@@ -1735,22 +2077,110 @@ static NSMutableArray *gRXStores;     // MRU first
     }
 }
 
-- (void)applyEdit:(RXStRecord *)e {
+// An edit row that stays visible: counted, and logged only when its reason changes (it repeats every build).
+- (void)keepEdit:(RXStRecord *)e because:(NSString *)why {
+    _stats.editsKept++;
+    if (![e.guid length] || [[_editKept objectForKey:e.guid] isEqualToString:why]) {
+        return;
+    }
+    if ([_editKept count] >= RXST_EDITS_PER_CHAT) {
+        [_editKept removeAllObjects];
+    }
+    [_editKept setObject:why forKey:e.guid];
+    RXLog(@"store #%04lx: edit %@ kept visible (%@)", RXStChatTag(_chatKey), RXGUIDTail(e.guid), why);
+}
+
+// The target's shown text parts into the shown-edit map (what the transcript pins at append).
+- (void)publishEditFor:(RXStRecord *)c {
+    if (![c.guid length]) {
+        return;
+    }
+    NSMutableDictionary *parts = [NSMutableDictionary dictionary];
+    for (RXStSeg *seg in c.segs) {
+        if (seg.fromPart && seg.cur && [seg.shown length]) {
+            [parts setObject:seg.shown forKey:[NSNumber numberWithInteger:seg.partKey]];
+        }
+    }
+    NSDictionary *entry = [parts count] ? [parts copy] : nil;
+    NSDictionary *old = [_editShown objectForKey:c.guid];
+    if ((!entry && !old) || [old isEqualToDictionary:entry]) {
+        return;
+    }
+    _editsTouched = YES;
+    if (!entry) {
+        [_editShown removeObjectForKey:c.guid];
+        [_editOrder removeObject:c.guid];
+        return;
+    }
+    if (!old) {
+        [_editOrder addObject:c.guid];
+    }
+    [_editShown setObject:entry forKey:c.guid];
+    while ([_editOrder count] > RXST_EDITS_PER_CHAT) {
+        NSString *drop = [_editOrder objectAtIndex:0];
+        [_editOrder removeObjectAtIndex:0];
+        [_editShown removeObjectForKey:drop];
+    }
+}
+
+// Memory side of the edit row -> target link (capped like the shown edits).
+- (void)noteEditTarget:(NSString *)target forRow:(NSString *)row {
+    if (![_editTarget objectForKey:row]) {
+        [_editTargetOrder addObject:row];
+    }
+    [_editTarget setObject:target forKey:row];
+    while ([_editTargetOrder count] > RXST_EDITS_PER_CHAT) {
+        [_editTarget removeObjectForKey:[_editTargetOrder objectAtIndex:0]];
+        [_editTargetOrder removeObjectAtIndex:0];
+    }
+}
+
+// R5 6.5 aliases, unchanged: the new text is an alias of every message from the edit's author in the 15 min
+// before it (reaction matching). With `real` (Show Edits on, not typed here) it is also the shown edit
+// (DESIGN 4.5): candidates are those messages with a real text part, scored against their CURRENT text
+// (after earlier edits); the best wins at >= 0.5, else the newest, but only when the whole 15 min before
+// the edit is loaded (`allLoaded`: no Load Earlier). A name-first row whose name is not the sender's first
+// name (my own rows included) needs RXST_EDIT_STRONG_SIM, never takes the newest and adds no aliases;
+// unapplied, the caller makes it an ordinary candidate ("Ok I edited ..." parses the same). One text part per
+// edit (the best scoring one), at most RXST_EDIT_MAX per message, a later edit wins; an edit row never moves to
+// another bubble while its first target is not loaded (the link is kept in the matched list as "eg", so it
+// survives relaunch, eviction and Show Edits off). Returns YES when applied (the row is then hidden).
+- (BOOL)applyEdit:(RXStRecord *)e real:(BOOL)real allLoaded:(BOOL)allLoaded {
     _stats.edits++;
     NSString *alias = RXStNorm(e.event.editText);
     NSString *aliasTrim = RXStTrim(alias);
     if (![aliasTrim length] || !e.hasDate) {
-        return;
+        if (real) {
+            [self keepEdit:e because:@"no text"];
+        }
+        return NO;
+    }
+    // Name-first rows: the sender's own first name is trusted like "Edited to". Any other name (a contact saved
+    // under another name, an unsaved number, or a sentence like "Ok I edited ...", mine too: my own rows are
+    // never name-checked) must be a close rewrite of the author's recent message (RXST_EDIT_STRONG_SIM), never
+    // takes the newest fallback and adds no aliases.
+    BOOL nameFirst = [e.event.editName length] > 0;
+    BOOL nameTrusted = !nameFirst || e.editNameMatch;
+    if (!nameTrusted && !real) {
+        return NO;
     }
     NSString *aliasColl = RXStCollapse(alias);
     NSString *author = [self who:e.reactor];
+    NSString *lower = real ? [alias lowercaseString] : nil;
     NSInteger n = (NSInteger)[_cands count];
     NSInteger lo = MAX((NSInteger)0, n - RXST_WINDOW);
-    NSUInteger applied = 0;
+    NSUInteger aliased = 0;
+    NSUInteger scored = 0;
+    RXStRecord *newest = nil;
+    NSInteger newestPart = NSNotFound;
+    double newestSim = 0;
+    RXStRecord *best = nil;
+    NSInteger bestPart = NSNotFound;
+    double bestSim = -1.0;
     for (NSInteger i = n - 1; i >= lo; i--) {
         RXStRecord *c = [_cands objectAtIndex:(NSUInteger)i];
-        if (!c.hasDate || ![c.segs count]) {
-            continue;
+        if (c.isEdit || !c.hasDate || ![c.segs count]) {
+            continue;                                 // an unapplied name-first row: never an alias holder or target
         }
         NSTimeInterval d = e.t - c.t;
         if (d < -RXST_EDIT_SLACK || d > RXST_EDIT_WINDOW) {
@@ -1759,22 +2189,137 @@ static NSMutableArray *gRXStores;     // MRU first
         if (![[self who:c.reactor] isEqualToString:author]) {
             continue;
         }
-        if (!c.aliases) {
-            c.aliases = [NSMutableArray array];
+        if (nameTrusted) {
+            if (!c.aliases) {
+                c.aliases = [NSMutableArray array];
+            }
+            if (![c.aliases containsObject:alias]) {
+                [c.aliases addObject:alias];          // aliases accumulate (R5 6.5)
+                RXStIndex(_idxAlias, alias, c, c.firstTextKey);
+                RXStIndex(_idxAliasTrim, aliasTrim, c, c.firstTextKey);
+                RXStIndex(_idxColl, aliasColl, c, c.firstTextKey);
+                aliased++;
+            }
         }
-        if ([c.aliases containsObject:alias]) {
+        if (!real || scored >= RXST_EDIT_CANDS) {
             continue;
         }
-        [c.aliases addObject:alias];                  // aliases accumulate (R5 6.5)
-        RXStIndex(_idxAlias, alias, c, c.firstTextKey);
-        RXStIndex(_idxAliasTrim, aliasTrim, c, c.firstTextKey);
-        RXStIndex(_idxColl, aliasColl, c, c.firstTextKey);
-        applied++;
+        double partSim = -1.0;
+        NSInteger part = NSNotFound;
+        for (RXStSeg *seg in c.segs) {
+            if (!seg.fromPart || ![seg.trim length]) {
+                continue;                             // pins live on real text parts only
+            }
+            double sim = RXStEditSim(lower, [(seg.cur ? seg.cur : seg.norm) lowercaseString]);
+            if (sim > partSim) {                      // ties: the lower part key
+                partSim = sim;
+                part = seg.partKey;
+            }
+        }
+        if (part == NSNotFound) {
+            continue;
+        }
+        scored++;
+        if (!newest) {
+            newest = c;
+            newestPart = part;
+            newestSim = partSim;
+        }
+        if (partSim > bestSim) {                      // ties: the newer candidate
+            best = c;
+            bestPart = part;
+            bestSim = partSim;
+        }
     }
-    if (applied) {
-        RXLog(@"store #%04lx: edit row %@ aliased %lu messages", RXStChatTag(_chatKey), RXGUIDTail(e.guid),
-              (unsigned long)applied);
+    if (!real) {
+        if (aliased) {
+            RXLog(@"store #%04lx: edit row %@ aliased %lu messages", RXStChatTag(_chatKey), RXGUIDTail(e.guid),
+                  (unsigned long)aliased);
+        }
+        return NO;
     }
+
+    RXStRecord *target = nil;
+    NSInteger pk = NSNotFound;
+    double sim = 0;
+    NSString *rule = nil;
+    // The newest fallback needs the whole window loaded: its original may be just above Load Earlier.
+    BOOL covered = allLoaded || (_buildHasFirstT && _buildFirstT <= e.t - RXST_EDIT_WINDOW);
+    BOOL newestOK = !nameFirst || e.editNameMatch;   // "Edited to", or a name-first row with the sender's name
+    if (best && bestSim >= (nameTrusted ? RXST_EDIT_MIN_SIM : RXST_EDIT_STRONG_SIM)) {
+        target = best;
+        pk = bestPart;
+        sim = bestSim;
+        rule = @"sim";
+    } else if (newest && covered && newestOK) {
+        target = newest;
+        pk = newestPart;
+        sim = newestSim;
+        rule = nameFirst ? @"name" : @"newest";
+    }
+    if (!target) {
+        NSString *why = @"no target";
+        if (!nameTrusted) {
+            why = @"name";
+        } else if (newest) {
+            why = covered ? @"low sim" : @"not loaded";
+        }
+        [self keepEdit:e because:why];
+        return NO;
+    }
+    // First applied to another bubble that is not loaded now (deleted, or above Load Earlier): stays visible.
+    // The persisted link covers a relaunch, an evicted store and Show Edits off (memory map empty).
+    NSString *was = [e.guid length] ? [_editTarget objectForKey:e.guid] : nil;
+    if (!was && [e.guid length]) {
+        id pg = [[self listedEntry:e.guid] objectForKey:@"eg"];
+        if ([pg isKindOfClass:[NSString class]] && [(NSString *)pg length]) {
+            was = pg;
+            [self noteEditTarget:was forRow:e.guid];
+        }
+    }
+    if (was &&![was isEqualToString:target.guid] && ![(RXStRecord *)[_byGUID objectForKey:was] isCandidate]) {
+        [self keepEdit:e because:@"target gone"];
+        return NO;
+    }
+    RXStSeg *seg = nil;
+    for (RXStSeg *candidate in target.segs) {
+        if (candidate.fromPart && candidate.partKey == pk) {
+            seg = candidate;
+            break;
+        }
+    }
+    if (!seg) {
+        [self keepEdit:e because:@"no target"];
+        return NO;
+    }
+    // The same edit again (the own-number chat's second copy) changes nothing but is still folded.
+    if (![seg.cur isEqualToString:alias]) {
+        if (target.editCount >= RXST_EDIT_MAX) {
+            [self keepEdit:e because:@"max"];          // never falls over to another bubble
+            return NO;
+        }
+        seg.cur = alias;
+        seg.shown = RXStStripFFFC(e.event.editText);
+        target.editCount = target.editCount + 1;
+        RXStIndex(_idxEdited, alias, target, pk);           // a reaction quoting the shown text lands here
+        RXStIndex(_idxEditedTrim, aliasTrim, target, pk);
+    }
+    target.editRule = rule;
+    target.editSim = sim;
+    target.editCands = scored;
+    e.editApplied = YES;
+    e.targetGUID = target.guid;
+    e.targetPart = pk;
+    if ([e.guid length] && ![was isEqualToString:target.guid]) {
+        [self noteEditTarget:target.guid forRow:e.guid];
+        // Persisted with the matched list (its own "eg" key; edit rows are never looked up as reactions).
+        NSMutableDictionary *pe = [NSMutableDictionary dictionaryWithObject:[NSDate date] forKey:@"t"];
+        [pe setObject:target.guid forKey:@"eg"];
+        [RXStMatched() setEntry:pe forChat:_chatKey key:e.guid];
+    }
+    _stats.editsApplied++;
+    [self publishEditFor:target];
+    return YES;
 }
 
 - (void)markFailed:(RXStRecord *)r {
@@ -1905,6 +2450,10 @@ static NSMutableArray *gRXStores;     // MRU first
 }
 
 - (BOOL)reingest:(RXStRecord *)r failed:(BOOL)failed allowHide:(BOOL)allowHide {
+    if (r.isEdit) {
+        r.hidden = allowHide && r.editApplied;
+        return r.hidden;
+    }
     if (failed && !r.failed && r.isReaction) {
         [self markFailed:r];
         _stats.failed++;
@@ -1917,7 +2466,7 @@ static NSMutableArray *gRXStores;     // MRU first
     return hide;
 }
 
-- (BOOL)ingestMessage:(CKIMMessage *)msg allowHide:(BOOL)allowHide {
+- (BOOL)ingestMessage:(CKIMMessage *)msg allowHide:(BOOL)allowHide badges:(BOOL)badges edits:(BOOL)edits {
     if (!msg) {
         return NO;
     }
@@ -1941,14 +2490,43 @@ static NSMutableArray *gRXStores;     // MRU first
     r.seq = ++_clock;
     [_byGUID setObject:r forKey:guid];
     _stats.messages++;
+    if (r.hasDate && (!_buildHasFirstT || r.t < _buildFirstT)) {
+        _buildFirstT = r.t;
+        _buildHasFirstT = YES;
+    }
     [self noteDuplicate:r];
     [self takeOptimisticFor:r];
 
     if (r.isEdit) {
-        [self applyEdit:r];                     // edit rows stay visible and are never candidates
-        return NO;
+        // Hidden only when Show Edits applied it to a loaded message (DESIGN 4.5); a row typed on this iPhone
+        // (own Send path, allowHide NO) is remembered and never treated as an edit.
+        if (edits && !allowHide && ![_localSends containsObject:guid]) {
+            [_localSends addObject:guid];
+            if ([_localSends count] > RXST_LOCAL_SENDS) {
+                [_localSends removeObjectAtIndex:0];
+            }
+        }
+        BOOL real = edits && allowHide && RXStRawTextAvailable() && ![_localSends containsObject:guid];
+        BOOL allLoaded = NO;
+        if (real) {
+            CKConversation *conv = [msg respondsToSelector:@selector(conversation)] ? [msg conversation] : nil;
+            allLoaded = conv && [conv respondsToSelector:@selector(moreMessagesToLoad)] && ![conv moreMessagesToLoad];
+        }
+        BOOL applied = [self applyEdit:r real:real allLoaded:allLoaded];
+        r.hidden = applied;
+        if (applied) {
+            _stats.hidden++;
+            return YES;
+        }
+        if (!r.event.editName) {
+            return NO;                          // "Edited to" rows are never candidates (R5 6.5)
+        }
+        // An unapplied name-first row may be an ordinary sentence ("I edited ..."): a candidate, as in 2.1.2.
     }
     if (r.isReaction) {
+        if (!badges) {
+            return NO;                          // Show Reactions off (Show Edits alone ingests): stays text
+        }
         if (r.failed) {
             _stats.failed++;
             [self forgetMatch:guid];
@@ -1972,6 +2550,78 @@ static NSMutableArray *gRXStores;     // MRU first
 
 - (BOOL)isKnownGUID:(NSString *)guid {
     return [guid length] && [_byGUID objectForKey:guid] != nil;
+}
+
+#pragma mark Edits (DESIGN 4.5)
+
+- (NSDictionary *)editsForGUID:(NSString *)guid {
+    return [guid length] ? [_editShown objectForKey:guid] : nil;
+}
+
+// End of a real rebuild: a shown edit whose message was rebuilt without an applied edit (its edit row is
+// gone) is dropped; the transcript then re-runs the build once, so the bubble shows its own text again.
+- (void)finishBuild {
+    if (![_editShown count]) {
+        return;
+    }
+    NSMutableArray *stale = nil;
+    for (NSString *guid in _editShown) {
+        RXStRecord *rec = [_byGUID objectForKey:guid];
+        if (rec.isCandidate && rec.editCount == 0) {
+            if (!stale) {
+                stale = [NSMutableArray array];
+            }
+            [stale addObject:guid];
+        }
+    }
+    for (NSString *guid in stale) {
+        [_editShown removeObjectForKey:guid];
+        [_editOrder removeObject:guid];
+        _editsTouched = YES;
+    }
+}
+
+// YES when the shown-edit map differs from the last restart / take; one log line per changed message.
+- (BOOL)takeEditsChanged {
+    if (!_editsTouched) {
+        return NO;
+    }
+    _editsTouched = NO;
+    NSMutableSet *keys = [NSMutableSet setWithArray:[_editShown allKeys]];
+    if (_editStart) {
+        [keys addObjectsFromArray:[_editStart allKeys]];
+    }
+    NSUInteger changed = 0;
+    for (NSString *guid in keys) {
+        NSDictionary *now = [_editShown objectForKey:guid];
+        NSDictionary *was = [_editStart objectForKey:guid];
+        if (now == was || [now isEqualToDictionary:was]) {
+            continue;
+        }
+        changed++;
+        if (!now) {
+            RXLog(@"store #%04lx: edit on %@ dropped", RXStChatTag(_chatKey), RXGUIDTail(guid));
+            continue;
+        }
+        RXStRecord *rec = [_byGUID objectForKey:guid];
+        RXLog(@"store #%04lx: edit shown on %@ (%lu part(s), rule %@, sim %d, %lu cands, n%ld)",
+              RXStChatTag(_chatKey), RXGUIDTail(guid), (unsigned long)[now count], rec.editRule ? rec.editRule : @"?",
+              (int)(rec.editSim * 100.0 + 0.5), (unsigned long)rec.editCands, (long)rec.editCount);
+    }
+    _editStart = [_editShown copy];
+    return changed > 0;
+}
+
+- (NSUInteger)clearEdits {
+    NSUInteger n = [_editShown count];
+    [_editShown removeAllObjects];
+    [_editOrder removeAllObjects];
+    [_editKept removeAllObjects];
+    [_editTarget removeAllObjects];
+    [_editTargetOrder removeAllObjects];
+    _editStart = nil;
+    _editsTouched = NO;
+    return n;
 }
 
 #pragma mark Badges

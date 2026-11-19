@@ -21,7 +21,8 @@
 //    visible, which is exactly what nil means.
 //  * Google-marker events go through the same quote rules as quoted tails (an empty quote is unmatchable,
 //    a trailing U+2026 marks truncation) and need a non-empty, letter-free emoji token.
-//  * Edit rows set editText only (RXShared.h: "editText set; nothing else").
+//  * Edit rows set editText only (RXShared.h: "editText set; nothing else"); the name-first edit row
+//    ("Taylor edited <q>X<q>", 2.2.0) also sets editName.
 
 #import "RXShared.h"
 
@@ -36,8 +37,8 @@
 // Safe for logs: kinds, flags and lengths only - never the quote, emoji or edit text.
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"<RXEvent edit=%d removal=%d kind=%d target=%d qlen=%lu trunc=%d elen=%lu>",
-            (int)self.isEdit, (int)self.isRemoval, (int)self.kind, (int)self.target,
+    return [NSString stringWithFormat:@"<RXEvent edit=%d named=%d removal=%d kind=%d target=%d qlen=%lu trunc=%d elen=%lu>",
+            (int)self.isEdit, (int)(self.editName != nil), (int)self.isRemoval, (int)self.kind, (int)self.target,
             (unsigned long)[self.quote length], (int)self.truncated, (unsigned long)[self.editText length]];
 }
 
@@ -106,6 +107,8 @@ static const RXNamedSpec kRXNamedHeads[] = {
 
 static NSRegularExpression *sNamedRegex[RX_NAMED_COUNT];
 static NSArray *sNamedNeedles;                // " loved ", " removed ", ... (cheap pre-filter)
+static NSRegularExpression *sNamedEditCurly;  // ^(name) edited (?:to )?U+201C(.*)U+201D$  (2.2.0; format unverified)
+static NSRegularExpression *sNamedEditStraight; // ^(name) edited (?:to )?"(.*)"$
 
 static NSRegularExpression *sHeadRegex[RX_HEAD_COUNT];
 static NSRegularExpression *sQuoteCurly;      // ^U+201C(.*)U+201D$  greedy: to the last U+201D
@@ -155,6 +158,11 @@ static void RXParserSetup(void)
         }
         sNamedNeedles = [NSArray arrayWithObjects:@" loved ", @" liked ", @" disliked ", @" laughed at ",
                          @" emphasized ", @" emphasised ", @" questioned ", @" removed ", @" reacted ", nil];
+        // Name-first edit row ("Taylor edited <q>X<q>"; "edited to" and straight quotes tolerated). Same name group,
+        // so the name never crosses a quote; the quote is greedy to the LAST closing quote, like every quoted tail.
+        NSString *editCurly = [NSString stringWithFormat:@"edited (?:to )?%C(.*)%C$", (unichar)0x201C, (unichar)0x201D];
+        sNamedEditCurly    = RXCompile([nameGroup stringByAppendingString:editCurly], &failures);
+        sNamedEditStraight = RXCompile([nameGroup stringByAppendingString:@"edited (?:to )?\"(.*)\"$"], &failures);
         sQuoteCurly    = RXCompile(@"^\\u201C(.*)\\u201D$", &failures);
         sQuoteStraight = RXCompile(@"^\"(.*)\"$", &failures);
         sEditCurly     = RXCompile(@"^Edited to \\u201C(.*)\\u201D$", &failures);
@@ -321,7 +329,7 @@ static NSString *RXEditText(NSString *s)
     return m ? RXGroup(m, s, 1) : nil;
 }
 
-// Name-first forms (kRXNamedHeads); nil when s is not one.
+// Name-first forms (kRXNamedHeads, then the name-first edit row); nil when s is not one.
 static RXEvent *RXParseNamed(NSString *s)
 {
     BOOL hasVerb = NO;
@@ -331,10 +339,11 @@ static RXEvent *RXParseNamed(NSString *s)
             break;
         }
     }
-    if (!hasVerb) {
+    BOOL hasEdit = [s rangeOfString:@" edited "].location != NSNotFound;
+    if (!hasVerb && !hasEdit) {
         return nil;
     }
-    for (size_t i = 0; i < RX_NAMED_COUNT; i++) {
+    for (size_t i = 0; hasVerb && i < RX_NAMED_COUNT; i++) {
         NSTextCheckingResult *m = RXMatch(sNamedRegex[i], s);
         if (!m) {
             continue;
@@ -352,6 +361,22 @@ static RXEvent *RXParseNamed(NSString *s)
         ev.emoji = emoji;
         RXApplyTail(ev, [s substringFromIndex:NSMaxRange([m range])]);
         return ev;
+    }
+    // "Taylor edited <q>X<q>": tried only after no tapback head matched, so "Taylor edited <q>I loved it<q>" is
+    // an edit and "Taylor loved <q>I edited it<q>" a tapback (the name group never crosses a quote).
+    if (hasEdit) {
+        NSTextCheckingResult *m = RXMatch(sNamedEditCurly, s);
+        if (!m) {
+            m = RXMatch(sNamedEditStraight, s);
+        }
+        NSString *edited = m ? RXGroup(m, s, 2) : nil;
+        if (edited) {
+            RXEvent *ev = [[RXEvent alloc] init];
+            ev.isEdit = YES;
+            ev.editText = edited;
+            ev.editName = RXGroup(m, s, 1);
+            return ev;
+        }
     }
     return nil;
 }
@@ -612,7 +637,7 @@ static BOOL RXCheckParseVector(const RXParseVector *v)
             return ev == nil;
         case RXShapeEdit:
             return ev && ev.isEdit && !ev.isRemoval && ev.kind == RXKindNone && ev.target == RXTargetUnknown &&
-                   RXSameString(ev.editText, v->text);
+                   RXSameString(ev.editText, v->text) && ev.editName == nil;
         default:
             return ev && !ev.isEdit && ev.isRemoval == v->removal && ev.kind == v->kind &&
                    RXSameString(ev.emoji, v->emoji) && ev.target == v->target &&
@@ -660,6 +685,17 @@ static BOOL RXCheckNamed(NSString *input, BOOL removal, RXKind kind, NSString *e
     }
     return ev && !ev.isEdit && ev.isRemoval == removal && ev.kind == kind && RXSameString(ev.emoji, emoji) &&
            ev.target == target && RXSameString(ev.quote, quote);
+}
+
+// Name-first edit vectors: text nil means "must not parse".
+static BOOL RXCheckNamedEdit(NSString *input, NSString *text, NSString *name)
+{
+    RXEvent *ev = RXParse(input);
+    if (!text) {
+        return ev == nil;
+    }
+    return ev && ev.isEdit && !ev.isRemoval && ev.kind == RXKindNone && ev.target == RXTargetUnknown &&
+           RXSameString(ev.editText, text) && RXSameString(ev.editName, name);
 }
 
 static void RXTally(BOOL ok, NSString *ident, NSUInteger *pass, NSUInteger *total, NSMutableArray *fails)
@@ -761,6 +797,39 @@ void RXParserSelfTest(void)
                                  NO, RXKindNone, nil, RXTargetUnknown, nil), @"P10", &pass, &total, fails);
         }
 
+        // Name-first edit rows (E1-E13, 2.2.0). Fake names only. Curly quotes are built at runtime (lq/rq).
+        {
+            NSString *lq = [NSString stringWithFormat:@"%C", (unichar)0x201C];
+            NSString *rq = [NSString stringWithFormat:@"%C", (unichar)0x201D];
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"Taylor edited %@the text goes here%@", lq, rq],
+                                     @"the text goes here", @"Taylor"), @"E1", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit(@"Taylor Brooks edited \"on the dryer\"", @"on the dryer", @"Taylor Brooks"),
+                    @"E2", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"Taylor edited to %@on the dryer%@", lq, rq],
+                                     @"on the dryer", @"Taylor"), @"E3", &pass, &total, fails);
+            // Starts with E: goes past the "Edited to" and "Emphasized" heads to the name-first forms.
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"E. Taylor edited %@ok%@", lq, rq], @"ok", @"E. Taylor"),
+                    @"E4", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"Taylor edited %@He said %@hi%@ to me%@", lq, lq, rq, rq],
+                                     [NSString stringWithFormat:@"He said %@hi%@ to me", lq, rq], @"Taylor"),
+                    @"E5", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"Taylor edited %@line1\nline2%@", lq, rq],
+                                     @"line1\nline2", @"Taylor"), @"E6", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit(@"Taylor edited the doc", nil, nil), @"E7", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"Taylor edited %@x%@ yesterday", lq, rq], nil, nil),
+                    @"E8", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"Taylor reedited %@x%@", lq, rq], nil, nil),
+                    @"E9", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"Taylor Edited %@x%@", lq, rq], nil, nil),
+                    @"E10", &pass, &total, fails);
+            RXTally(RXCheckNamed([NSString stringWithFormat:@"Taylor loved %@I edited it%@", lq, rq],
+                                 NO, RXKindLove, nil, RXTargetText, @"I edited it"), @"E11", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"Taylor edited %@to be fair%@", lq, rq],
+                                     @"to be fair", @"Taylor"), @"E12", &pass, &total, fails);
+            RXTally(RXCheckNamedEdit([NSString stringWithFormat:@"Taylor edited %@I loved it%@", lq, rq],
+                                     @"I loved it", @"Taylor"), @"E13", &pass, &total, fails);
+        }
+
         // Normaliser (R5 6.2).
         RXTally([RXNormalize(@"\uFFFCAre\u200E you\u2026") isEqualToString:@"Are you\u2026"], @"N1", &pass, &total, fails);
         RXTally([RXNormalize(@"Cafe\u0301") isEqualToString:@"Caf\u00E9"], @"N2", &pass, &total, fails);
@@ -824,6 +893,9 @@ void RXParserSelfTest(void)
                       RXCheckCompose(RXKindLike, nil, YES, (RXTarget)t, nil, nil, NO);
             RXTally(ok, [NSString stringWithFormat:@"M%d", t], &pass, &total, fails);
         }
+
+        // Edit similarity and the name check (S1-S6, RXStore.m).
+        RXStoreSelfTest(&pass, &total, fails);
 
         if ([fails count] > 0) {
             RXLog(@"parser self-test %lu/%lu failed: %@", (unsigned long)pass, (unsigned long)total,

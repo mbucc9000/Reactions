@@ -1,18 +1,14 @@
-// Reactions 2.0 — RXSend.m: sending a tapback (DESIGN.md §8, R2 §1, R5 §7).
-//
-// The reaction goes out as a plain iMessage text through the conversation's own IMChat:
-//   +[IMMessage instantMessageWithText:flags:] (0x100005 = finished|fromMe|wasDataDetected, the
-//   64-bit flags passed through an explicit unsigned-long-long objc_msgSend cast, R2 §1.4) with the
-//   body attributed __kIMMessagePartAttributeName = 0, then -[IMChat sendMessage:].
-// The new message's GUID is read before sending and handed to RXStore with the optimistic vote, so
-// the badge changes instantly and the daemon echo is recognised as ours. A failed send is handled
-// by RXStore/RXTranscript (the row stays visible with the stock "Not Delivered"); here only a
-// missing class/selector/chat or a throwing send is reported, with a stock alert (a throwing send
-// also drops the optimistic vote through -[RXStore messageFailed:]).
-//
-// Logs: kinds, lengths and GUID tails only (DESIGN §2).
+// Native tapback sending: stage metadata by outgoing GUID before IMChat sends.
+// ReactionsNative adds that metadata before encryption. Ordinary text bypasses it.
 
 #import "RXShared.h"
+#import "native/RXNativeBridge.h"
+
+@interface IMMessage (RXNativeCreation)
+- (id)initWithSender:(id)sender time:(NSDate *)time text:(NSAttributedString *)text
+      messageSubject:(id)messageSubject fileTransferGUIDs:(id)transfers
+               flags:(unsigned long long)flags error:(id)error guid:(NSString *)guid subject:(id)subject;
+@end
 
 #define RX_SEND_ATTR_PART   @"__kIMMessagePartAttributeName"
 
@@ -81,6 +77,21 @@ BOOL RXSendReaction(CKTranscriptController *tc, NSString *guid, NSInteger partKe
         RXLog(@"send: invalid request (kind %d, guid %d, emoji %d)", (int)kind, guid.length ? 1 : 0, emoji.length ? 1 : 0);
         return NO;
     }
+    RXPrefs prefs = RXGetPrefs();
+    if (!prefs.enabled || !prefs.picker || !RXNativeAvailable()) {
+        RXSendShowFailureAlert();
+        return NO;
+    }
+    unsigned int nativeKind;
+    switch (kind) {
+        case RXKindLove: nativeKind = RXNativeHeart; break;
+        case RXKindLike: nativeKind = RXNativeLike; break;
+        case RXKindDislike: nativeKind = RXNativeDislike; break;
+        case RXKindLaugh: nativeKind = RXNativeLaugh; break;
+        case RXKindEmph: nativeKind = RXNativeEmphasize; break;
+        case RXKindQuestion: nativeKind = RXNativeQuestion; break;
+        default: RXSendShowFailureAlert(); return NO;
+    }
 
     // Everything the IMCore path needs. Any miss = the stock-style alert (DESIGN §8).
     CKTranscriptBubbleData *data = RXResponds(tc, @selector(bubbleData)) ? [tc bubbleData] : nil;
@@ -88,14 +99,22 @@ BOOL RXSendReaction(CKTranscriptController *tc, NSString *guid, NSInteger partKe
     IMChat *chat = RXResponds(conversation, @selector(chat)) ? [conversation chat] : nil;
     NSString *chatKey = RXChatKeyForConversation(conversation);
     Class messageClass = NSClassFromString(@"IMMessage");
-    SEL makeSelector = @selector(instantMessageWithText:flags:);
-    BOOL canMake = messageClass && [messageClass respondsToSelector:makeSelector];
+    SEL makeSelector = @selector(initWithSender:time:text:messageSubject:fileTransferGUIDs:flags:error:guid:subject:);
+    BOOL canMake = messageClass && [messageClass instancesRespondToSelector:makeSelector];
     BOOL canSend = RXResponds(chat, @selector(sendMessage:));
     BOOL canFind = RXResponds(data, @selector(indexForMessageWithGUID:)) && RXResponds(data, @selector(messageAtIndex:))
                    && RXResponds(data, @selector(count));
     if (!data || !chat || !chatKey.length || !canMake || !canSend || !canFind) {
         RXLog(@"send: no path (data %d, chat %d, key %d, IMMessage %d, sendMessage %d, lookup %d)",
               data ? 1 : 0, chat ? 1 : 0, chatKey.length ? 1 : 0, canMake ? 1 : 0, canSend ? 1 : 0, canFind ? 1 : 0);
+        RXSendShowFailureAlert();
+        return NO;
+    }
+    SEL accountSEL = sel_registerName("account");
+    SEL serviceSEL = sel_registerName("serviceName");
+    id account = [chat respondsToSelector:accountSEL] ? ((id (*)(id, SEL))objc_msgSend)(chat, accountSEL) : nil;
+    id service = [account respondsToSelector:serviceSEL] ? ((id (*)(id, SEL))objc_msgSend)(account, serviceSEL) : nil;
+    if (![service isEqual:@"iMessage"]) {
         RXSendShowFailureAlert();
         return NO;
     }
@@ -141,16 +160,37 @@ BOOL RXSendReaction(CKTranscriptController *tc, NSString *guid, NSInteger partKe
     NSMutableAttributedString *body = [[NSMutableAttributedString alloc] initWithString:text];
     [body addAttribute:RX_SEND_ATTR_PART value:@0 range:NSMakeRange(0, body.length)];
 
+    if (!part || partKey < 0) {
+        RXSendShowFailureAlert();
+        return NO;
+    }
+    NSDictionary *fields = RXNativeReactionFields(guid, (NSUInteger)partKey, nativeKind, removal,
+                                  quote ?: @"", target != RXTargetText, 0,
+                                  target == RXTargetText ? quote.length : 0);
+    NSString *nativeGUID = RXNativeNewGUID();
+    if (!fields || !RXNativeStage(nativeGUID, text, fields)) {
+        RXSendShowFailureAlert();
+        return NO;
+    }
+
     id imMessage = nil;
     @try {
-        imMessage = ((id (*)(id, SEL, id, unsigned long long))objc_msgSend)(messageClass, makeSelector, body, RX_IM_FLAGS);
+        imMessage = [(IMMessage *)[messageClass alloc] initWithSender:nil time:[NSDate date] text:body
+                            messageSubject:nil fileTransferGUIDs:nil flags:RX_IM_FLAGS error:nil
+                            guid:nativeGUID subject:nil];
     } @catch (NSException *exception) {
         RXLog(@"send: IMMessage factory threw %@", exception.name);
         imMessage = nil;
     }
     NSString *sentGUID = [imMessage respondsToSelector:@selector(guid)] ? [imMessage guid] : nil;
     if (!imMessage || !sentGUID.length) {
+        RXNativeDiscard(nativeGUID);
         RXLog(@"send: IMMessage factory returned %@", imMessage ? @"no guid" : @"nil");
+        RXSendShowFailureAlert();
+        return NO;
+    }
+    if (![sentGUID isEqual:nativeGUID]) {
+        RXNativeDiscard(nativeGUID);
         RXSendShowFailureAlert();
         return NO;
     }

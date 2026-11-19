@@ -1497,3 +1497,95 @@ static CGFloat RXQuoteAlignLine(CGFloat v, CGFloat scale) {
 }
 
 @end
+
+#pragma mark - RXEditedMarkerView (DESIGN 4.5)
+
+// "Edited" beside the bottom outer corner of an edited bubble, in the stock Delivered label style
+// (CKMessageStatusCell: bold system font at messageStatusTextSize 11, #8892A5 with a hard #F3F7FF copy at
+// (0,+1)); on MessageWallpapers chats white with black a0.6 at (0,+1), MW's own label style. Fixed 11 pt like
+// the stock status label. Drawn in drawRect:, not interactive (no "Balloon" in the name needed: MW's hold
+// hit-test never returns a view with user interaction off, so a hold on it acts like the empty background).
+
+static NSString *const RXEditedText = @"Edited";
+
+static UIFont *RXEditedFont(void) {
+    static UIFont *font;
+    if (!font) {
+        font = [UIFont boldSystemFontOfSize:11.0f];
+    }
+    return font;
+}
+
+@implementation RXEditedMarkerView
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.opaque = NO;
+        self.backgroundColor = nil;
+        self.clearsContextBeforeDrawing = YES;
+        self.contentMode = UIViewContentModeRedraw;
+        self.clipsToBounds = NO;
+        self.userInteractionEnabled = NO;
+        self.hidden = YES;
+    }
+    return self;
+}
+
+- (void)setWallpaper:(BOOL)wallpaper {
+    if (_wallpaper == wallpaper) {
+        return;
+    }
+    _wallpaper = wallpaper;
+    [self setNeedsDisplay];
+}
+
+// Baseline RX_EDIT_BASELINE_UP above the balloon frame's bottom (2.5 pt below the body), RX_EDIT_GAP outside its
+// outer edge; past the badge art when they would touch; NO when it would leave [2, W - 2] or touch the balloon.
+- (BOOL)layoutForBalloonFrame:(CGRect)balloonFrame outgoing:(BOOL)outgoing inBounds:(CGRect)bounds avoiding:(CGRect)avoid {
+    UIFont *font = RXEditedFont();
+    CGFloat w = ceilf([RXEditedText sizeWithFont:font].width);
+    CGFloat asc = ceilf(font.ascender);
+    if (w <= 0 || asc <= 0 || CGRectIsEmpty(balloonFrame)) {
+        return NO;
+    }
+    CGFloat baseline = CGRectGetMaxY(balloonFrame) - RX_EDIT_BASELINE_UP;
+    CGFloat x = outgoing ? CGRectGetMinX(balloonFrame) - RX_EDIT_GAP - w : CGRectGetMaxX(balloonFrame) + RX_EDIT_GAP;
+    CGRect frame = CGRectMake(roundf(x), roundf(baseline - asc), w, asc + 2.0f);
+    if (!CGRectIsNull(avoid) && CGRectIntersectsRect(frame, avoid)) {
+        frame.origin.x = outgoing ? floorf(CGRectGetMinX(avoid) - 2.0f - w) : ceilf(CGRectGetMaxX(avoid) + 2.0f);
+    }
+    if (CGRectGetMinX(frame) < CGRectGetMinX(bounds) + 2.0f || CGRectGetMaxX(frame) > CGRectGetMaxX(bounds) - 2.0f ||
+        CGRectIntersectsRect(frame, balloonFrame)) {
+        return NO;
+    }
+    if (!CGRectEqualToRect(self.frame, frame)) {
+        self.frame = frame;
+    }
+    return YES;
+}
+
+- (void)drawRect:(CGRect)rect {
+    static const CGFloat plainFill[4] = {136.0f / 255.0f, 146.0f / 255.0f, 165.0f / 255.0f, 1.0f};     // #8892A5
+    static const CGFloat plainShadow[4] = {243.0f / 255.0f, 247.0f / 255.0f, 1.0f, 1.0f};              // #F3F7FF
+    static const CGFloat wallFill[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    static const CGFloat wallShadow[4] = {0.0f, 0.0f, 0.0f, 0.6f};
+    RXDrawEngravedText(RXEditedText, CGPointZero, RXEditedFont(), _wallpaper ? wallFill : plainFill,
+                       _wallpaper ? wallShadow : plainShadow, 1.0f);
+}
+
+#pragma mark Accessibility
+
+- (BOOL)isAccessibilityElement {
+    return !self.hidden;
+}
+
+- (NSString *)accessibilityLabel {
+    return RXEditedText;
+}
+
+- (UIAccessibilityTraits)accessibilityTraits {
+    return UIAccessibilityTraitStaticText;
+}
+
+@end

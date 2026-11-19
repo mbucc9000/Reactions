@@ -22,7 +22,7 @@
 
 #pragma mark - Constants
 
-#define RX_VERSION              @"2.1.1"
+#define RX_VERSION              @"2.3.0"
 #define RX_LOG_PATH             "/var/mobile/Reactions.log"
 #define RX_PREFS_PATH           @"/var/mobile/Library/Preferences/com.mbucc9000.reactions.plist"
 #define RX_PREFS_NOTIFY         "com.mbucc9000.reactions/prefs"
@@ -33,6 +33,7 @@
 #define RX_PREF_PICKER          @"picker"      // Double-Tap to React
 #define RX_PREF_SWIPE           @"swipe"       // Swipe to Reply
 #define RX_PREF_QUOTES          @"quotes"      // Reply Quotes
+#define RX_PREF_EDITS           @"edits"       // Show Edits (default ON; not gated by React & Reply)
 #define RX_PREF_HAPTIC          @"haptic"
 #define RX_DATA_DIR             @"/var/mobile/Library/Reactions"
 #define RX_REPLIES_PATH         @"/var/mobile/Library/Reactions/Replies.plist"
@@ -42,6 +43,8 @@
 #define RX_BADGE_ROW_EXTRA      15.0f    // extra row height for a badge (DESIGN §5.4)
 #define RX_QUOTE_GAP            2.0f     // gap between quote art and the reply/badge band
 #define RX_REPLY_BAR_H          32.0f    // reply strip height H (DESIGN §10)
+#define RX_EDIT_GAP             4.0f     // "Edited" marker: gap from the balloon frame's outer edge (DESIGN §4.5)
+#define RX_EDIT_BASELINE_UP     2.0f     // "Edited" marker: baseline this far above the balloon frame's bottom
 #define RX_SWIPE_KEY            @"RXReplySwipe"                  // CAAnimation key (DESIGN §9)
 #define RX_HOLD_KEY             @"RXHoldingUpdatesReplySwipe"    // ChatKit holding-updates key (DESIGN §9)
 #define RX_IM_FLAGS             0x100005ULL                      // finished|fromMe|wasDataDetected (R2 §1.2)
@@ -187,6 +190,7 @@ typedef struct {
     BOOL picker;      // F2 double-tap to react (effective: sending && the picker switch)
     BOOL swipe;       // F3 swipe to reply (effective: sending && the swipe switch)
     BOOL quotes;      // F3 reply quotes in transcript
+    BOOL edits;       // F5 show edits (default YES; independent of React & Reply)
     BOOL haptic;      // swipe tick
 } RXPrefs;
 RXPrefs RXGetPrefs(void);
@@ -238,7 +242,7 @@ typedef enum {
 } RXTarget;
 
 @interface RXEvent : NSObject
-@property (nonatomic, assign) BOOL isEdit;             // "Edited to “X”" (editText set; nothing else)
+@property (nonatomic, assign) BOOL isEdit;             // "Edited to “X”" or "Name edited “X”" (editText, editName; nothing else)
 @property (nonatomic, assign) BOOL isRemoval;
 @property (nonatomic, assign) RXKind kind;
 @property (nonatomic, copy) NSString *emoji;           // RXKindEmoji only
@@ -246,7 +250,8 @@ typedef enum {
 @property (nonatomic, copy) NSString *quote;           // RXTargetText: inner text as received
 @property (nonatomic, assign) BOOL truncated;          // quote ended with U+2026
 @property (nonatomic, copy) NSString *prefix;          // truncated: quote minus "…" minus trailing whitespace
-@property (nonatomic, copy) NSString *editText;
+@property (nonatomic, copy) NSString *editText;        // edit rows: the NEW text (also the name-first "Name edited <q>X<q>")
+@property (nonatomic, copy) NSString *editName;        // name-first edit rows only: the leading name (never logged)
 @end
 
 RXEvent *RXParse(NSString *text);                          // nil = ordinary message
@@ -294,17 +299,27 @@ void RXParserSelfTest(void);                               // R5 §8 vectors; lo
 @end
 
 RXTarget RXTargetForPart(CKMessagePart *part);            // text part -> RXTargetText; media by media-object class / UTI
-NSString *RXTextForPart(CKMessagePart *part);              // text part's plain string (FFFC removed), else nil
+NSString *RXTextForPart(CKMessagePart *part);              // text part's plain string as the bubble shows it (the edited
+                                                           // text when pinned; FFFC removed), else nil. Never used by the
+                                                           // store, which reads the raw _text ivar (DESIGN §4.5)
+void RXStoreClearEdits(void);                              // every store's shown edits (prefs: Show Edits / Enabled off)
+void RXStoreSelfTest(NSUInteger *pass, NSUInteger *total, NSMutableArray *fails);   // S1-S6, run by RXParserSelfTest
 
 @interface RXStore : NSObject
 + (RXStore *)storeForChatKey:(NSString *)chatKey create:(BOOL)create;  // LRU: on-screen chat + 4 more
 @property (nonatomic, readonly, copy) NSString *chatKey;
 
 // Build lifecycle (DESIGN §5.1). Order = append order within one bubble-data instance.
-- (void)restartBuild;                                   // keeps reply links, matched list, optimistic votes
-- (BOOL)ingestMessage:(CKIMMessage *)msg allowHide:(BOOL)allowHide;   // returns YES => caller must hide (skip %orig)
+- (void)restartBuild;                                   // keeps reply links, matched list, optimistic votes, shown edits
+// Returns YES => caller must hide (skip %orig). `badges` = Show Reactions, `edits` = Show Edits (both incl. Enabled).
+- (BOOL)ingestMessage:(CKIMMessage *)msg allowHide:(BOOL)allowHide badges:(BOOL)badges edits:(BOOL)edits;
 - (BOOL)isHiddenGUID:(NSString *)guid;
 - (BOOL)isKnownGUID:(NSString *)guid;
+
+// Edits (DESIGN §4.5). The shown-edit map survives builds (it lives as long as the store).
+- (NSDictionary *)editsForGUID:(NSString *)guid;        // { @(partKey): new text } for that message, or nil
+- (void)finishBuild;                                    // end of a real rebuild: drops shown edits whose edit is gone
+- (BOOL)takeEditsChanged;                               // the map differs from the last restart / take (then resets)
 
 // Badges.
 - (RXBadgeModel *)badgeForGUID:(NSString *)guid partKey:(NSInteger)partKey;
@@ -326,6 +341,12 @@ NSString *RXTextForPart(CKMessagePart *part);              // text part's plain 
 
 void RXTranscriptBuildBegin(CKTranscriptController *tc);   // -_computeBubbleData: before %orig
 void RXTranscriptBuildEnd(CKTranscriptController *tc);     // after %orig
+BOOL RXTranscriptTakeBuildRerun(void);                     // after BuildEnd: YES once when edits changed (re-run the build)
+void RXTranscriptBuildRerunDone(void);                     // after the re-run's BuildEnd
+// Append hook, before %orig (DESIGN §4.5): pins each text part of `message` to its shown edit, or clears a stale
+// pin. `active` NO = cleanup path (Enabled off / not ingestible): pins are only cleared (no store, no prefs).
+void RXTranscriptPinEdits(CKTranscriptBubbleData *data, id message, BOOL active);
+id RXTranscriptEditedText(id part);                        // -[CKTextMessagePart text] hook: the pinned text or nil (main, O(1))
 void RXTranscriptBubbleDataCleared(CKTranscriptBubbleData *data);
 void RXTranscriptSetInOwnSend(BOOL inside);                // around -appendMessageToBubbleData:
 BOOL RXTranscriptShouldHideAppend(CKTranscriptBubbleData *data, id message);   // ingests; YES => return empty set
@@ -376,6 +397,15 @@ void RXTeardown(CKTranscriptController *tc, RXTeardownReason reason);
 // Positions quote + connector above the reply balloon; `withBadge` routes the connector under the badge band.
 - (void)layoutForReplyBalloonFrame:(CGRect)replyFrame replyOutgoing:(BOOL)replyOutgoing
                          withBadge:(BOOL)withBadge inBounds:(CGRect)bounds;
+@end
+
+// "Edited" beside the bottom outer corner of an edited bubble (DESIGN §4.5), in the stock Delivered label style.
+// Not interactive, so MessageWallpapers' hold hit-test never returns it (no "Balloon" in the name needed).
+@interface RXEditedMarkerView : UIView
+@property (nonatomic, assign) BOOL wallpaper;
+// Right of a received / left of a sent balloon frame, moved clear of `avoid` (badge art or CGRectNull);
+// NO when it does not fit in `bounds` beside the bubble (the caller hides it).
+- (BOOL)layoutForBalloonFrame:(CGRect)balloonFrame outgoing:(BOOL)outgoing inBounds:(CGRect)bounds avoiding:(CGRect)avoid;
 @end
 
 #pragma mark - Picker (RXPicker.m) — DESIGN §7

@@ -1,8 +1,8 @@
 Package: com.mbucc9000.reactions
 Name: Reactions
-Version: 2.1.2
+Version: 2.3.0
 Architecture: iphoneos-arm
-Description: Shows tapback reactions in iOS 6 Messages, in stock iOS 6 style. Reacting and swipe-to-reply are optional and off by default; they send plain text, not real reactions.
+Description: Tapback badges, edited messages and native iMessage reaction sending for iOS 6 Messages.
 Author: mbucc9000
 Maintainer: mbucc9000
 Section: Tweaks

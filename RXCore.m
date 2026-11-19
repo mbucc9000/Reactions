@@ -362,18 +362,21 @@ static RXPrefs RXReadPrefs(void) {
     p.picker = (p.sending && RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_PICKER, @"doubleTapToReact", @"DoubleTapToReact", nil], YES)) ? YES : NO;
     p.swipe = (p.sending && RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_SWIPE, @"swipeToReply", @"SwipeToReply", nil], YES)) ? YES : NO;
     p.quotes = RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_QUOTES, @"replyQuotes", @"ReplyQuotes", nil], YES);
+    // Show Edits is on by default and is not folded with React & Reply (it only changes what is shown).
+    p.edits = RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_EDITS, @"showEdits", @"ShowEdits", nil], YES);
     p.haptic = RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_HAPTIC, @"Haptic", nil], YES);
     return p;
 }
 
 static BOOL RXPrefsEqual(RXPrefs a, RXPrefs b) {
     return (a.enabled == b.enabled && a.badges == b.badges && a.sending == b.sending && a.picker == b.picker &&
-            a.swipe == b.swipe && a.quotes == b.quotes && a.haptic == b.haptic) ? YES : NO;
+            a.swipe == b.swipe && a.quotes == b.quotes && a.edits == b.edits && a.haptic == b.haptic) ? YES : NO;
 }
 
 static void RXLogPrefs(NSString *why, RXPrefs p) {
-    RXLog(@"prefs %@: enabled=%d badges=%d sending=%d picker=%d swipe=%d quotes=%d haptic=%d", why,
-          (int)p.enabled, (int)p.badges, (int)p.sending, (int)p.picker, (int)p.swipe, (int)p.quotes, (int)p.haptic);
+    RXLog(@"prefs %@: enabled=%d badges=%d sending=%d picker=%d swipe=%d quotes=%d edits=%d haptic=%d", why,
+          (int)p.enabled, (int)p.badges, (int)p.sending, (int)p.picker, (int)p.swipe, (int)p.quotes, (int)p.edits,
+          (int)p.haptic);
 }
 
 RXPrefs RXGetPrefs(void) {

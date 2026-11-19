@@ -13,6 +13,9 @@
 //    is inside our dealloc hook, every hook passes straight through, so no module ever forms a
 //    weak reference to a deallocating controller (fatal on the iOS 6 runtime).
 //  * Main thread only: off the main thread every hook passes straight through.
+//  * -[CKTextMessagePart text] (2.2.0 edits) checks neither prefs nor the dealloc guard: it only returns a
+//    pin that already exists, and must keep doing so until the next build clears it, because ChatKit saved
+//    the bubble's size from that same text (DESIGN 4.5). Pins change only in the append hook.
 //  * ChatKit classes are reached by name only (Logos looks them up with objc_getClass).
 //  * Encodings match the device class dump ChatKit.objc.txt (line numbers in comments).
 
@@ -35,9 +38,11 @@ static BOOL RXTActive(void) {
 }
 
 // Hiding paths (append filter + every "is this message hidden" hook) share one condition, so a
-// message is never treated as hidden while the append hook is letting its rows through.
+// message is never treated as hidden while the append hook is letting its rows through. Tapback rows
+// hide with Show Reactions, applied edit rows with Show Edits.
 static BOOL RXTHiding(void) {
-    return RXTActive() && RXOn(RXGetPrefs().badges);
+    RXPrefs prefs = RXGetPrefs();
+    return RXTActive() && (prefs.badges || prefs.edits);
 }
 
 static void RXTTrack(CKTranscriptController *tc) {
@@ -202,6 +207,7 @@ static const char *const kRXTHookTargets[][2] = {
     { "CKMessageEntryView", "layoutSubviews" },
     { "CKMessageEntryView", "didMoveToWindow" },
     { "CKConversation", "newMessageWithComposition:guid:addToConversation:" },
+    { "CKTextMessagePart", "text" },
 };
 
 static void RXTCheckHookTargets(void) {
@@ -226,7 +232,12 @@ static void RXTCheckHookTargets(void) {
 
 // Full teardown first regardless of flags (RXTeardown(Prefs) also drops every chat's reply state and
 // queues the one gated reload per live transcript), then the swipe recognizer if Swipe is on now.
+// Show Edits (or Enabled) now off: every chat's shown edits are dropped here (RXTeardown never reads
+// prefs), so that reload builds stock bubbles; its appends clear the pins (cleanup path), never this.
 static void RXTPrefsChanged(void) {
+    if (RXTLive() && !RXOn(RXGetPrefs().edits)) {
+        RXStoreClearEdits();
+    }
     NSArray *live = [gRXTControllers allObjects];
     for (CKTranscriptController *tc in live) {
         RXTTeardown(tc, RXTeardownPrefs);
@@ -324,6 +335,9 @@ static void RXTPrefsChanged(void) {
     if (RXTActive()) {
         RXTranscriptEditingChanged(self);
     }
+    if (!editing && RXTLive()) {
+        RXTranscriptPoke(self);        // leaving Edit mode is a gate-retry event (DESIGN 5.6): a reload that gave up runs now
+    }
 }
 
 // v20@0:4i8d12 (L314)
@@ -350,6 +364,10 @@ static void RXTPrefsChanged(void) {
 // c12@0:4c8 (L400): the build context (DESIGN 5.1). A build that made new bubble data is followed by a
 // reloadData outside _processRemovedIndices:, so it closes an open picker (DESIGN 7 "a forced reload").
 // Our own gated reload only runs with the picker closed.
+// Edits (DESIGN 4.5): when an edit is found after its bubble was appended (ChatKit saved that bubble's
+// text and size), the build runs once more, forced, inside this call: both callers (the forced reload
+// and setConversation:) reloadData only after it returns, so the old text never reaches the table. It
+// returns YES whenever it rebuilt (CK@0xed8c), so the result stays YES.
 - (BOOL)_computeBubbleData:(BOOL)force
 {
     BOOL pickerOpen = RXTLive() && RXPickerIsOpen(self);
@@ -361,6 +379,13 @@ static void RXTPrefsChanged(void) {
     BOOL result = %orig;
     if (active) {
         RXTranscriptBuildEnd(self);
+        if (RXTranscriptTakeBuildRerun()) {
+            RXTranscriptBuildBegin(self);
+            BOOL again = %orig(YES);
+            RXTranscriptBuildEnd(self);
+            RXTranscriptBuildRerunDone();
+            result = (result || again) ? YES : NO;
+        }
     }
     if (before && [self bubbleData] != before) {
         RXPickerDismiss(self, NO);
@@ -529,16 +554,22 @@ static void RXTPrefsChanged(void) {
 %hook CKTranscriptBubbleData
 
 // @12@0:4@8 (L1169): the single entry point for message rows (DESIGN 5.1). Gated on the master switch
-// only: RXTranscriptShouldHideAppend itself ingests/hides only with Show Reactions on (the same
-// condition as RXTHiding), and with Reply Quotes alone it still defers a just-sent reply's quote.
+// only: RXTranscriptShouldHideAppend itself ingests/hides only with Show Reactions or Show Edits on (the
+// same condition as RXTHiding), and with Reply Quotes alone it still defers a just-sent reply's quote.
+// A visible message's edited text is pinned right before %orig reads, measures and saves it (DESIGN
+// 4.5); the cleanup path (Enabled off, not ingestible) only clears stale pins, without store or prefs.
 - (id)appendBubbleDataForMessage:(id)message
 {
     if (!RXTActive() || !RXTIngestible(message)) {
+        if (RXTLive()) {
+            RXTranscriptPinEdits(self, message, NO);
+        }
         return %orig;
     }
     if (RXTranscriptShouldHideAppend(self, message)) {
         return [NSMutableIndexSet indexSet];
     }
+    RXTranscriptPinEdits(self, message, YES);
     return %orig;
 }
 
@@ -783,6 +814,23 @@ static void RXTPrefsChanged(void) {
     id m = %orig;
     RXReplyCaptureMessage(m);
     return m;
+}
+
+%end
+
+#pragma mark - CKTextMessagePart (CK.dump L1085)
+
+%hook CKTextMessagePart
+
+// @8@0:4: the one getter behind a text bubble's text, size, Copy and Forward (CK@0x31480 returns _text).
+// An edited part answers its pinned new text (DESIGN 4.5); everything else, and any other thread, %orig.
+- (id)text
+{
+    id pinned = RXTranscriptEditedText(self);
+    if (pinned) {
+        return pinned;
+    }
+    return %orig;
 }
 
 %end
