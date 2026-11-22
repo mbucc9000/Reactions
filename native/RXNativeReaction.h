@@ -40,6 +40,8 @@ static inline int RXNativeGUIDIsValid(const char *guid) {
  * targetText is the ORIGINAL untruncated target; rangeLength is UTF-16 units.
  * Returns nil for unsupported reactions, malformed IDs or invalid ranges.
  */
+NSDictionary *RXNativeReplyFields(NSString *targetGUID, NSUInteger part,
+                                  NSUInteger location, NSUInteger length);
 NSDictionary *RXNativeReactionFields(NSString *targetGUID, NSUInteger part,
                                     unsigned int reaction, BOOL removal,
                                     NSString *targetText, BOOL media,

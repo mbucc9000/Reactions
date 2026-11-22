@@ -35,6 +35,18 @@ static NSString *RXNativePath(NSString *guid) {
 
 static BOOL RXNativeFieldsValid(id fields) {
     if (![fields isKindOfClass:[NSDictionary class]]) return NO;
+    if ([fields count] == 1 && [[fields objectForKey:@"tg"] isKindOfClass:[NSString class]]) {
+        NSArray *items = [[fields objectForKey:@"tg"] componentsSeparatedByString:@":"];
+        if (items.count != 5 || ![[items objectAtIndex:0] isEqual:@"r"]) return NO;
+        for (NSUInteger i = 1; i < 4; i++) {
+            NSString *number = [items objectAtIndex:i];
+            if (!number.length || number.length > 10 || [number rangeOfCharacterFromSet:
+                [[NSCharacterSet characterSetWithCharactersInString:@"0123456789"] invertedSet]].location != NSNotFound ||
+                [number longLongValue] > 2147483647LL) return NO;
+        }
+        return [[items objectAtIndex:2] longLongValue] + [[items objectAtIndex:3] longLongValue] <= 2147483647LL &&
+               RXNativeGUIDIsValid([[items objectAtIndex:4] UTF8String]);
+    }
     NSSet *expected = [NSSet setWithObjects:@"amk", @"amt", @"amrlc", @"amrln", @"msi", nil];
     if (![[NSSet setWithArray:[fields allKeys]] isEqual:expected]) return NO;
     id target = [fields objectForKey:@"amk"];
@@ -138,6 +150,6 @@ NSDictionary *RXNativeDecorate(NSDictionary *original, NSDictionary *request) {
     [out setObject:@"8" forKey:@"gv"];
     [out setObject:@"1" forKey:@"v"];
     // A tapback carries fallback text, not a second independently rendered HTML body.
-    [out removeObjectForKey:@"x"];
+    if (![[request objectForKey:@"fields"] objectForKey:@"tg"]) [out removeObjectForKey:@"x"];
     return out;
 }

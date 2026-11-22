@@ -22,7 +22,7 @@
 
 #pragma mark - Constants
 
-#define RX_VERSION              @"2.3.0"
+#define RX_VERSION              @"2.3.1"
 #define RX_LOG_PATH             "/var/mobile/Reactions.log"
 #define RX_PREFS_PATH           @"/var/mobile/Library/Preferences/com.mbucc9000.reactions.plist"
 #define RX_PREFS_NOTIFY         "com.mbucc9000.reactions/prefs"
@@ -441,7 +441,7 @@ BOOL RXReplyFramesShifted(UIView *entry);                   // the entry's curre
 void RXReplyLayoutEntry(UIView *entry);                     // -[CKMessageEntryView layoutSubviews] after %orig
 
 // Send capture (DESIGN §10).
-void RXReplyCaptureBegin(CKTranscriptController *tc);       // -[CKTranscriptController sendMessage:] before %orig
-void RXReplyCaptureGUID(NSString *guidArg);                 // newMessageWithComposition:guid:... before %orig (may be nil)
+BOOL RXReplyCaptureBegin(CKTranscriptController *tc, id composition);       // -[CKTranscriptController sendMessage:] before %orig
+NSString *RXReplyCaptureGUID(NSString *guidArg);                 // newMessageWithComposition:guid:... before %orig (may be nil)
 void RXReplyCaptureMessage(id createdMessage);              // ...after %orig (fallback when guidArg was nil)
 void RXReplyCaptureEnd(CKTranscriptController *tc);         // after %orig: leave reply mode

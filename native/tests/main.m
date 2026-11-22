@@ -3,8 +3,12 @@
 #include <assert.h>
 #include <unistd.h>
 #include <dlfcn.h>
+#import <objc/runtime.h>
 
 @interface NSObject (RXFactoryCheck)
++ (id)newCompositionForText:(NSString *)text;
+- (NSArray *)messageParts;
+- (NSString *)textString;
 - (id)initWithSender:(id)sender time:(NSDate *)time text:(NSAttributedString *)text
       messageSubject:(id)subject fileTransferGUIDs:(id)transfers flags:(unsigned long long)flags
                error:(id)error guid:(NSString *)guid subject:(id)handle;
@@ -29,6 +33,22 @@ int main(void) { @autoreleasepool {
  assert(!RXNativeReactionFields(guid,0,0,NO,@"x",NO,1,1));
  assert(!RXNativeReactionFields(@"../bad",0,0,NO,@"x",NO,0,1));
  assert(RXNativeReactionFields(guid,0,0,NO,@"",YES,0,0));
+ NSDictionary *reply = RXNativeReplyFields(guid,2,4,7);
+ assert([[reply objectForKey:@"tg"] isEqual:@"r:2:4:7:01234567-89AB-CDEF-0123-456789ABCDEF"]);
+ assert(!RXNativeReplyFields(@"bad",0,0,1));
+ assert(!RXNativeReplyFields(guid,0,2147483647U,1));
+ NSDictionary *replyRequest = @{@"fallback":@"Reply text",@"fields":reply};
+ NSDictionary *original = @{@"t":@"Reply text",@"x":@"<span>Reply text</span>",@"p":@[@"a",@"b"],@"r":@"routing"};
+ NSDictionary *result = RXNativeDecorate(original,replyRequest);
+ assert(result && [[result objectForKey:@"tg"] isEqual:[reply objectForKey:@"tg"]]);
+ assert([[result objectForKey:@"x"] isEqual:[original objectForKey:@"x"]]);
+ assert([[result objectForKey:@"r"] isEqual:@"routing"] && ![original objectForKey:@"tg"]);
+ assert(!RXNativeDecorate(@{@"t":@"different"},replyRequest));
+ assert(!RXNativeDecorate(original,@{@"fallback":@"Reply text",@"fields":@{@"tg":@"r:0:-1:1:bad"}}));
+ NSString *replyGUID = RXNativeNewGUID();
+ assert(RXNativeStage(replyGUID,@"Reply text",reply));
+ assert([[RXNativeRead(replyGUID) objectForKey:@"fields"] isEqual:reply]);
+ RXNativeDiscard(replyGUID);
  assert(RXNativeIsGUID(RXNativeNewGUID()));
  NSString *requestGUID=RXNativeNewGUID();
  NSDictionary *f=RXNativeReactionFields(guid,0,0,NO,@"Hi",NO,0,2);

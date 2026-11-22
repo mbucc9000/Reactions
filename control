@@ -1,6 +1,6 @@
 Package: com.mbucc9000.reactions
 Name: Reactions
-Version: 2.3.0
+Version: 2.3.1
 Architecture: iphoneos-arm
 Description: Tapback badges, edited messages and native iMessage reaction sending for iOS 6 Messages.
 Author: mbucc9000

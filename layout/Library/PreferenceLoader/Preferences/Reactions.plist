@@ -87,7 +87,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Off by default. Double-tap a bubble to send a heart, thumbs up, thumbs down, laugh, emphasis or question over iMessage. Reactions appear as native badges on newer iPhones. Swipe replies still arrive as ordinary messages without the quote. Holding a bubble still shows Copy. Haptic gives a light tap when the swipe is ready.</string>
+			<string>Double-tap a bubble to send a heart, thumbs up, thumbs down, laugh, emphasis or question over iMessage. Reactions appear as native badges on newer iPhones. Swipe a bubble right to send a native iMessage reply. Text-only replies are supported. Holding a bubble still shows Copy. Haptic gives a light tap when the swipe is ready.</string>
 			<key>label</key>
 			<string>Reacting &amp; Replying</string>
 		</dict>
@@ -97,7 +97,7 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<false/>
+			<true/>
 			<key>defaults</key>
 			<string>com.mbucc9000.reactions</string>
 			<key>key</key>

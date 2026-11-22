@@ -524,7 +524,7 @@ static void RXTPrefsChanged(void) {
         %orig;
         return;
     }
-    RXReplyCaptureBegin(self);
+    if (!RXReplyCaptureBegin(self, composition)) return;
     %orig;
     RXReplyCaptureEnd(self);
 }
@@ -810,8 +810,8 @@ static void RXTPrefsChanged(void) {
     if (!RXTActive()) {
         return %orig;
     }
-    RXReplyCaptureGUID(guid);
-    id m = %orig;
+    NSString *replyGUID = RXReplyCaptureGUID(guid);
+    id m = %orig(composition, replyGUID, add);
     RXReplyCaptureMessage(m);
     return m;
 }

@@ -2,20 +2,21 @@
 
 # Reactions
 
-Native iMessage reactions on iOS 6: see incoming tapbacks as badges, send the six classic reactions to newer iPhones, and show incoming edits in the original bubble.
+Native iMessage reactions and text replies on iOS 6, with incoming tapback badges and edits in the original bubble.
 
 ## Features
 
-- Incoming reactions appear as badges on message bubbles.
-- Send hearts, likes, dislikes, laughs, emphasis and questions as native iMessage reactions to newer iPhones.
-- Incoming edits update the original bubble with an Edited label.
-- React & Reply is off by default. Swipe replies still send ordinary text.
+- Incoming reactions appear as badges and incoming edits update their original bubbles.
+- Double-tap a bubble to send the six classic native iMessage reactions.
+- Swipe a bubble right to send a native text reply, with a quote on this iPhone and the newer iPhone.
+- Reactions, swipe replies and haptics are enabled by default. Holding a bubble still shows Copy.
 
 ## How to use
 
-1. Incoming reactions show as badges automatically. Show Edits updates matching original bubbles.
-2. Enable React & Reply in Settings > Reactions, then double-tap a bubble and choose a reaction. Native sending requires iMessage.
-3. Hold a bubble for Copy. Optional swipe replies still arrive as ordinary text, without an inline quote.
+1. Incoming reactions show as badges. Show Edits updates matching original bubbles.
+2. Double-tap a bubble to choose a native iMessage reaction.
+3. Swipe a bubble right, type a text reply and send. Native replies require iMessage; attachment replies are not supported yet.
+4. Hold a bubble for Copy. Change individual options in Settings > Reactions.
 
 ## Requirements
 

@@ -356,9 +356,9 @@ static RXPrefs RXReadPrefs(void) {
     RXPrefs p;
     p.enabled = RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_ENABLED, @"Enabled", nil], YES);
     p.badges = RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_BADGES, @"showReactions", @"ShowReactions", nil], YES);
-    // React & Reply is off by default. It gates both sending features, so every existing picker/swipe
+    // React & Reply defaults on, matching the confirmed phone setup. It gates picker/swipe
     // check (RXOn(...picker) / RXOn(...swipe)) sees NO while it is off, whatever their own switches say.
-    p.sending = RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_SENDING, @"reactAndReply", @"ReactAndReply", nil], NO);
+    p.sending = RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_SENDING, @"reactAndReply", @"ReactAndReply", nil], YES);
     p.picker = (p.sending && RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_PICKER, @"doubleTapToReact", @"DoubleTapToReact", nil], YES)) ? YES : NO;
     p.swipe = (p.sending && RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_SWIPE, @"swipeToReply", @"SwipeToReply", nil], YES)) ? YES : NO;
     p.quotes = RXPrefBool(d, [NSArray arrayWithObjects:RX_PREF_QUOTES, @"replyQuotes", @"ReplyQuotes", nil], YES);

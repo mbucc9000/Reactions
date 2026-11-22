@@ -24,6 +24,8 @@
 // Logs: counts, kinds, lengths, GUID tails only (DESIGN §2).
 
 #import "RXShared.h"
+#import "native/RXNativeBridge.h"
+#import <objc/message.h>
 #import <UIKit/UIGestureRecognizerSubclass.h>
 #include <math.h>
 
@@ -68,6 +70,8 @@
 @property (nonatomic, copy) NSString *chatKey;
 @property (nonatomic, copy) NSString *parentGUID;
 @property (nonatomic, assign) NSInteger partKey;
+@property (nonatomic, assign) NSUInteger rangeLocation;
+@property (nonatomic, assign) NSUInteger rangeLength;
 @property (nonatomic, assign) RXTarget kind;             // RXTargetText or a media kind
 @property (nonatomic, copy) NSString *snippet;           // <= 120 units, composed-safe ("" for media)
 @property (nonatomic, assign) BOOL isMine;
@@ -91,6 +95,7 @@
 
 // A stock send made while in reply mode (DESIGN §10 send capture).
 @interface RXReplyCapture : NSObject
+@property (nonatomic, copy) NSString *nativeGUID;
 @property (nonatomic, weak) CKTranscriptController *controller;
 @property (nonatomic, strong) RXReplyState *state;
 @property (nonatomic, assign) BOOL stored;
@@ -162,6 +167,53 @@ static NSString *RXReplyChatKey(CKTranscriptController *tc) {
     return RXChatKeyForConversation([tc conversation]);
 }
 
+// ComposeHistory restores the pending conversation before stock Send resolves the
+// existing thread. Resolve it read-only using the same account mapping; never create
+// or replace a conversation here. This also prevents a reply following a changed To:.
+@interface NSObject (RXReplyComposeLookup)
++ (id)sharedConversationList;
++ (id)sharedInstance;
+- (id)preferredService;
+- (id)bestAccountForService:(id)service;
+- (id)defaultIMHandle;
+- (id)imHandleForOtherAccount:(id)account;
+- (id)initWithIMHandle:(id)handle;
+- (id)conversationForRecipients:(id)recipients create:(BOOL)create;
+- (BOOL)isNewRecipient;
+@end
+
+static CKConversation *RXReplyResolvedConversation(CKTranscriptController *tc) {
+    CKConversation *pending = [tc respondsToSelector:@selector(conversation)] ? [tc conversation] : nil;
+    if (![tc respondsToSelector:@selector(isNewRecipient)] || ![tc isNewRecipient]) return pending;
+    NSArray *recipients = [pending respondsToSelector:@selector(recipients)] ? [pending recipients] : nil;
+    if (!recipients.count) return nil;
+    id service = [pending respondsToSelector:@selector(preferredService)] ? [pending preferredService] : nil;
+    Class accounts = NSClassFromString(@"IMAccountController");
+    id manager = [accounts respondsToSelector:@selector(sharedInstance)] ? [accounts sharedInstance] : nil;
+    id account = service && [manager respondsToSelector:@selector(bestAccountForService:)] ?
+        [manager bestAccountForService:service] : nil;
+    Class entityClass = NSClassFromString(@"CKIMEntity");
+    if (account && entityClass) {
+        NSMutableArray *mapped = [NSMutableArray array];
+        for (id entity in recipients) {
+            if (![entity isKindOfClass:entityClass] || ![entity respondsToSelector:@selector(defaultIMHandle)]) break;
+            id original = [entity defaultIMHandle];
+            id handle = [original respondsToSelector:@selector(imHandleForOtherAccount:)] ?
+                [original imHandleForOtherAccount:account] : nil;
+            id remapped = handle && [entityClass instancesRespondToSelector:@selector(initWithIMHandle:)] ?
+                [[entityClass alloc] initWithIMHandle:handle] : nil;
+            if (!remapped) break;
+            [mapped addObject:remapped];
+        }
+        if (mapped.count == recipients.count) recipients = mapped;
+    }
+    Class listClass = NSClassFromString(@"CKConversationList");
+    id list = [listClass respondsToSelector:@selector(sharedConversationList)] ? [listClass sharedConversationList] : nil;
+    CKConversation *resolved = [list respondsToSelector:@selector(conversationForRecipients:create:)] ?
+        [list conversationForRecipients:recipients create:NO] : nil;
+    return resolved && [resolved respondsToSelector:@selector(chat)] && [resolved chat] ? resolved : nil;
+}
+
 // Cheap first: with no chat in reply mode (always the case with Reactions off - a prefs change clears
 // every state) no conversation -> chat -> chatIdentifier walk runs on the entry's hot paths.
 static RXReplyState *RXReplyStateForController(CKTranscriptController *tc) {
@@ -169,10 +221,10 @@ static RXReplyState *RXReplyStateForController(CKTranscriptController *tc) {
         return nil;
     }
     NSString *key = RXReplyChatKey(tc);
-    if (!key.length) {
-        return nil;
-    }
-    return [gReplyStates objectForKey:key];
+    RXReplyState *direct = key.length ? [gReplyStates objectForKey:key] : nil;
+    if (direct) return direct;
+    key = RXChatKeyForConversation(RXReplyResolvedConversation(tc));
+    return key.length ? [gReplyStates objectForKey:key] : nil;
 }
 
 // The entry view's controller is its _delegate ivar (R2 §5.1).
@@ -965,6 +1017,12 @@ static RXReplyState *RXReplyMakeState(CKIMMessage *parent, NSInteger partKey, NS
         part = nil;
     }
     state.partKey = partKey >= 0 ? partKey : 0;
+    for (NSUInteger i = 0; i < parts.count; i++) {
+        CKMessagePart *item = [parts objectAtIndex:i];
+        NSUInteger length = RXTargetForPart(item) == RXTargetText ? RXTextForPart(item).length : 1;
+        if (i < (NSUInteger)state.partKey) state.rangeLocation += length;
+        if (i == (NSUInteger)state.partKey) state.rangeLength = length;
+    }
 
     RXTarget kind = part ? RXTargetForPart(part) : RXTargetText;
     NSString *text = nil;
@@ -1140,16 +1198,39 @@ void RXReplyLayoutEntry(UIView *entry) {
 
 #pragma mark - Send capture (DESIGN §10, R2 §2.3)
 
-void RXReplyCaptureBegin(CKTranscriptController *tc) {
+BOOL RXReplyCaptureBegin(CKTranscriptController *tc, id composition) {
     gReplyCapture = nil;
     RXReplyState *state = RXReplyStateForController(tc);
-    if (!state) {
-        return;
+    if (!state) return YES;
+    CKConversation *conversation = RXReplyResolvedConversation(tc);
+    id chat = [conversation respondsToSelector:@selector(chat)] ? [conversation chat] : nil;
+    SEL accountSEL = sel_registerName("account"), serviceSEL = sel_registerName("serviceName");
+    id account = [chat respondsToSelector:accountSEL] ? ((id (*)(id,SEL))objc_msgSend)(chat,accountSEL) : nil;
+    id service = [account respondsToSelector:serviceSEL] ? ((id (*)(id,SEL))objc_msgSend)(account,serviceSEL) : nil;
+    SEL textSEL = sel_registerName("textString"), partsSEL = sel_registerName("messageParts");
+    id text = [composition respondsToSelector:textSEL] ? ((id (*)(id,SEL))objc_msgSend)(composition,textSEL) : nil;
+    NSArray *parts = [composition respondsToSelector:partsSEL] ? ((id (*)(id,SEL))objc_msgSend)(composition,partsSEL) : nil;
+    id first = parts.count == 1 ? [parts objectAtIndex:0] : nil;
+    BOOL plain = first && ([first isKindOfClass:[NSString class]] ||
+        [first isKindOfClass:[NSAttributedString class]] || RXTargetForPart(first) == RXTargetText);
+    NSDictionary *fields = RXNativeReplyFields(state.parentGUID, (NSUInteger)state.partKey,
+                                               state.rangeLocation, state.rangeLength);
+    NSString *guid = RXNativeNewGUID();
+    if (!RXNativeAvailable() || ![service isEqual:@"iMessage"] || !plain ||
+        ![text isKindOfClass:[NSString class]] || ![text length] || !fields || !RXNativeStage(guid,text,fields)) {
+        [[[UIAlertView alloc] initWithTitle:@"Couldn't Send Reply"
+             message:@"Native replies require iMessage and a text-only reply. Your draft is still here."
+             delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil] show];
+        RXLog(@"reply: native preparation failed");
+        return NO;
     }
     RXReplyCapture *capture = [[RXReplyCapture alloc] init];
     capture.controller = tc;
     capture.state = state;
+    capture.nativeGUID = guid;
     gReplyCapture = capture;
+    RXLog(@"reply: native send prepared %@", RXGUIDTail(guid));
+    return YES;
 }
 
 static void RXReplyStoreLink(NSString *replyGUID) {
@@ -1177,8 +1258,10 @@ static void RXReplyStoreLink(NSString *replyGUID) {
           (int)state.kind, (long)state.partKey);
 }
 
-void RXReplyCaptureGUID(NSString *guidArg) {
-    RXReplyStoreLink(guidArg);
+NSString *RXReplyCaptureGUID(NSString *guidArg) {
+    NSString *guid = gReplyCapture.nativeGUID ?: guidArg;
+    RXReplyStoreLink(guid);
+    return guid;
 }
 
 void RXReplyCaptureMessage(id createdMessage) {
@@ -1208,6 +1291,7 @@ void RXReplyCaptureEnd(CKTranscriptController *tc) {
         RXReplyFadeContent(info.bar, NO, YES);
         RXReplySetPending(controller, info.grown);
     }
+    RXTranscriptScheduleRefresh(controller);
     RXLog(@"reply: sent; leaving reply mode");
 }
 

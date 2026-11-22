@@ -24,3 +24,13 @@ NSDictionary *RXNativeReactionFields(NSString *targetGUID, NSUInteger part,
     return @{ @"amk": target, @"amt": @(type), @"amrlc": @(rangeLocation),
               @"amrln": @(rangeLength), @"msi": notification };
 }
+
+NSDictionary *RXNativeReplyFields(NSString *targetGUID, NSUInteger part,
+                                  NSUInteger location, NSUInteger length) {
+    if (![targetGUID isKindOfClass:[NSString class]] ||
+        !RXNativeGUIDIsValid(targetGUID.UTF8String) || part > INT_MAX ||
+        location > INT_MAX || length > INT_MAX || length > INT_MAX - location) return nil;
+    return @{@"tg": [NSString stringWithFormat:@"r:%lu:%lu:%lu:%@",
+        (unsigned long)part, (unsigned long)location, (unsigned long)length,
+        [targetGUID uppercaseString]]};
+}
